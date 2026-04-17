@@ -1,0 +1,45 @@
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { background: #222; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif; }
+
+.phone-case { width: 360px; height: 740px; background: #000; border-radius: 50px; padding: 12px; border: 4px solid #333; position: relative; }
+.screen { width: 100%; height: 100%; background: #a1c4fd; border-radius: 40px; overflow: hidden; position: relative; transition: background 0.3s; }
+
+/* 桌面样式 */
+.desktop { padding: 60px 20px; height: 100%; }
+.icon-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.app-icon { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+.icon-box { width: 60px; height: 60px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 30px; margin-bottom: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+.app-icon span { font-size: 12px; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+
+.wechat-bg { background: #07c160; color: white; }
+.settings-bg { background: #8e8e93; color: white; }
+.theme-bg { background: #ff9500; color: white; }
+
+/* App 窗口共通 */
+.app-window { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #ededed; z-index: 100; display: flex; flex-direction: column; }
+.hidden { display: none !important; }
+.app-header { padding: 40px 15px 10px; background: #fff; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; }
+.back-btn { border: none; background: none; font-size: 18px; cursor: pointer; }
+
+/* 微信内部样式 */
+.chat-window { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.msg { padding: 8px 12px; border-radius: 8px; font-size: 14px; max-width: 80%; }
+.user { align-self: flex-end; background: #95ec69; position: relative; }
+.ai { align-self: flex-start; background: #fff; }
+
+/* 角色编辑器 */
+.char-editor { padding: 10px; background: #fff; border-bottom: 1px solid #ddd; display: flex; flex-direction: column; gap: 5px; }
+.char-editor input, .char-editor textarea { padding: 8px; border: 1px solid #eee; border-radius: 4px; }
+
+/* 配置表单 */
+.config-form { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+.config-form input, .config-form select { padding: 12px; border-radius: 8px; border: 1px solid #ddd; }
+.save-btn { background: #07c160; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; }
+
+/* 状态栏 & 底部栏 */
+.status-bar { position: absolute; top: 10px; width: 100%; padding: 0 25px; display: flex; justify-content: space-between; font-size: 12px; z-index: 200; font-weight: bold; }
+.home-indicator { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 120px; height: 5px; background: rgba(0,0,0,0.2); border-radius: 10px; }
+
+/* 主题 */
+.theme-sakura { background: #ffdde1 !important; }
+.theme-dark { background: #2c3e50 !important; }
