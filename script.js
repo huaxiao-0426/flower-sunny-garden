@@ -1,10 +1,45 @@
 // 应用状态管理
 let appState = {
-    currentCharacter: { 
-        name: "花阳美苑", 
-        prompt: "你是花阳美苑，一个温柔贴心的 AI 助手。"
+    // 用户自己的角色
+    currentUser: { 
+        id: 'user-1',
+        name: "花晓", 
+        prompt: "女，认认真真，战战兢兢",
+        avatar: '👤',
+        isUser: true
     },
-    characters: [],
+    
+    // AI角色列表
+    aiCharacters: [
+        {
+            id: 'ai-1',
+            name: "老板",
+            prompt: "实力强势女强人，但有花晓这个总爱闯祸的助理，无可奈何一直在收拾烂摊子",
+            avatar: '👩‍💼',
+            isAI: true
+        },
+        {
+            id: 'ai-2', 
+            name: "花阳美苑",
+            prompt: "你是花阳美苑，一个温柔贴心的 AI 助手。",
+            avatar: '🌸',
+            isAI: true
+        }
+    ],
+    
+    // 用户创建的虚拟人物角色
+    userCharacters: [],
+    
+    // 群聊列表
+    groupChats: [],
+    
+    // 聊天记录
+    conversations: {},
+    
+    // 未读消息计数
+    unreadCounts: {},
+    
+    // 其他状态
     worldbooks: [],
     moments: [],
     currentTheme: 'default',
@@ -13,75 +48,47 @@ let appState = {
         apiKey: '',
         model: 'deepseek-chat',
         autoMomentProbability: 50
+    },
+    
+    // 当前聊天状态
+    currentChat: {
+        type: null, // 'single', 'group'
+        targetId: null
     }
 };
 
-// 本地存储
-function saveToLocalStorage() {
-    const data = {
-        characters: appState.characters,
-        worldbooks: appState.worldbooks,
-        moments: appState.moments,
-        currentTheme: appState.currentTheme,
-        settings: appState.settings
-    };
-    localStorage.setItem('huaYangMeiYuan', JSON.stringify(data));
-}
-
-function loadFromLocalStorage() {
-    const saved = localStorage.getItem('huaYangMeiYuan');
-    if (saved) {
-        const data = JSON.parse(saved);
-        appState.characters = data.characters || appState.characters;
-        appState.worldbooks = data.worldbooks || appState.worldbooks;
-        appState.moments = data.moments || appState.moments;
-        appState.currentTheme = data.currentTheme || appState.currentTheme;
-        appState.settings = data.settings || appState.settings;
-        
-        // 更新UI
-        updateCharacterList();
-        updateWorldbookList();
-        updateStats();
-    }
-}
-
 // 初始化
 document.addEventListener('DOMContentLoaded', function() {
-    // 加载保存的数据
     loadFromLocalStorage();
-    
-    // 设置默认主题
     changeTheme(appState.currentTheme);
-    
-    // 初始化时钟 - 修复时间不更新问题
     updateClock();
     setInterval(updateClock, 1000);
     
-    // 初始化设置
     document.getElementById('api-url').value = appState.settings.apiUrl;
     document.getElementById('model-select').value = appState.settings.model;
     document.getElementById('auto-moment-prob').value = appState.settings.autoMomentProbability;
     document.getElementById('prob-value').textContent = `${appState.settings.autoMomentProbability}%`;
     
     // 事件监听
-    document.getElementById('send-btn').onclick = sendMessage;
-    document.getElementById('user-input').addEventListener('keypress', handleKeyPress);
+    document.getElementById('single-send-btn').onclick = sendSingleMessage;
+    document.getElementById('single-user-input').addEventListener('keypress', handleSingleKeyPress);
+    document.getElementById('group-send-btn').onclick = sendGroupMessage;
+    document.getElementById('group-user-input').addEventListener('keypress', handleGroupKeyPress);
     document.getElementById('auto-moment-prob').addEventListener('input', updateProbabilityValue);
     
-    // 如果有角色，显示第一个角色
-    if (appState.characters.length > 0) {
-        appState.currentCharacter = appState.characters[0];
-        document.getElementById('chat-title').textContent = `微信 (${appState.currentCharacter.name})`;
-    }
+    // 更新用户名显示
+    document.getElementById('user-name').textContent = appState.currentUser.name;
     
-    // 模拟一些初始动态
+    // 初始化聊天列表
+    updateChatList();
+    updateContactsList();
+    updateUnreadCount();
+    
     generateRandomMoments();
-    
-    // 启动自动朋友圈生成
     setInterval(generateAutoMoments, 5 * 60 * 1000);
 });
 
-// --- 修复的时间功能 ---
+// 时间功能
 function updateClock() {
     const now = new Date();
     const timeStr = now.getHours().toString().padStart(2, '0') + ":" + 
@@ -90,58 +97,342 @@ function updateClock() {
     
     document.getElementById('real-time').textContent = timeStr;
     document.getElementById('real-date').textContent = dateStr;
-}
-
-function updateProbabilityValue() {
-    const value = document.getElementById('auto-moment-prob').value;
-    document.getElementById('prob-value').textContent = `${value}%`;
-    appState.settings.autoMomentProbability = parseInt(value);
-    saveToLocalStorage();
-}
-
-// --- 修复的应用打开功能 ---
-function openApp(appId) {
-    document.querySelectorAll('.app-window').forEach(win => win.classList.add('hidden'));
-    document.getElementById('app-' + appId).classList.remove('hidden');
     
-    // 特殊处理
-    if (appId === 'moments') {
-        renderMoments();
-    } else if (appId === 'worldbook') {
-        renderWorldbooks();
-    } else if (appId === 'profile') {
-        updateStats();
+    // 更新微信顶部时间
+    const wechatTime = document.getElementById('wechat-time');
+    if (wechatTime) {
+        wechatTime.textContent = timeStr;
     }
 }
 
-function closeApp() {
-    document.querySelectorAll('.app-window').forEach(win => win.classList.add('hidden'));
-    document.getElementById('desktop').classList.remove('hidden');
-    
-    // 关闭所有编辑器
-    document.querySelectorAll('.char-editor, .group-manager, .importer, .post-editor').forEach(el => {
+// 微信标签页切换
+function switchWechatTab(tab) {
+    // 隐藏所有标签页
+    document.querySelectorAll('.tab-content, .chat-list-container').forEach(el => {
         el.classList.add('hidden');
+    });
+    
+    // 移除所有激活状态
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // 显示目标标签页
+    switch(tab) {
+        case 'chats':
+            document.getElementById('chat-list-container').classList.remove('hidden');
+            document.querySelector('.nav-item:nth-child(1)').classList.add('active');
+            break;
+        case 'contacts':
+            document.getElementById('contacts-container').classList.remove('hidden');
+            document.querySelector('.nav-item:nth-child(2)').classList.add('active');
+            break;
+        case 'discover':
+            document.getElementById('discover-container').classList.remove('hidden');
+            document.querySelector('.nav-item:nth-child(3)').classList.add('active');
+            break;
+        case 'profile':
+            document.getElementById('profile-container').classList.remove('hidden');
+            document.querySelector('.nav-item:nth-child(4)').classList.add('active');
+            break;
+    }
+}
+
+// 打开单聊
+function openSingleChat(characterId) {
+    const allCharacters = [...appState.aiCharacters, ...appState.userCharacters];
+    const character = allCharacters.find(c => c.id === characterId);
+    
+    if (!character) return;
+    
+    appState.currentChat = {
+        type: 'single',
+        targetId: characterId
+    };
+    
+    // 隐藏其他，显示单聊界面
+    document.querySelectorAll('.tab-content, .chat-list-container').forEach(el => {
+        el.classList.add('hidden');
+    });
+    document.getElementById('single-chat').classList.remove('hidden');
+    
+    // 更新聊天标题
+    document.getElementById('chat-with-name').textContent = character.name;
+    
+    // 清空未读消息
+    appState.unreadCounts[characterId] = 0;
+    updateUnreadCount();
+    
+    // 加载聊天记录
+    loadChatMessages(characterId, 'single');
+}
+
+// 打开群聊
+function openGroupChat(groupId) {
+    const group = appState.groupChats.find(g => g.id === groupId);
+    
+    if (!group) return;
+    
+    appState.currentChat = {
+        type: 'group',
+        targetId: groupId
+    };
+    
+    // 隐藏其他，显示群聊界面
+    document.querySelectorAll('.tab-content, .chat-list-container').forEach(el => {
+        el.classList.add('hidden');
+    });
+    document.getElementById('group-chat').classList.remove('hidden');
+    
+    // 更新聊天标题
+    document.getElementById('group-chat-name').textContent = group.name;
+    
+    // 清空未读消息
+    appState.unreadCounts[groupId] = 0;
+    updateUnreadCount();
+    
+    // 加载聊天记录
+    loadChatMessages(groupId, 'group');
+}
+
+// 返回聊天列表
+function backToChatList() {
+    document.querySelectorAll('.tab-content').forEach(el => {
+        el.classList.add('hidden');
+    });
+    document.getElementById('chat-list-container').classList.remove('hidden');
+    appState.currentChat.type = null;
+}
+
+// 返回发现页面
+function backToDiscover() {
+    document.getElementById('moments-container').classList.add('hidden');
+    document.getElementById('discover-container').classList.remove('hidden');
+}
+
+// 打开朋友圈
+function openMoments() {
+    document.getElementById('discover-container').classList.add('hidden');
+    document.getElementById('moments-container').classList.remove('hidden');
+    renderMoments();
+}
+
+// 更新聊天列表
+function updateChatList() {
+    const container = document.getElementById('chat-list');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    // 添加AI角色聊天
+    appState.aiCharacters.forEach(char => {
+        const conversation = appState.conversations[char.id] || [];
+        const lastMsg = conversation.length > 0 ? conversation[conversation.length - 1] : null;
+        const unread = appState.unreadCounts[char.id] || 0;
+        
+        const item = createChatItem(char, lastMsg, unread, () => openSingleChat(char.id));
+        container.appendChild(item);
+    });
+    
+    // 添加用户角色聊天
+    appState.userCharacters.forEach(char => {
+        const conversation = appState.conversations[char.id] || [];
+        const lastMsg = conversation.length > 0 ? conversation[conversation.length - 1] : null;
+        const unread = appState.unreadCounts[char.id] || 0;
+        
+        const item = createChatItem(char, lastMsg, unread, () => openSingleChat(char.id));
+        container.appendChild(item);
+    });
+    
+    // 添加群聊
+    appState.groupChats.forEach(group => {
+        const conversation = appState.conversations[group.id] || [];
+        const lastMsg = conversation.length > 0 ? conversation[conversation.length - 1] : null;
+        const unread = appState.unreadCounts[group.id] || 0;
+        
+        const item = createChatItem(group, lastMsg, unread, () => openGroupChat(group.id));
+        container.appendChild(item);
     });
 }
 
-function showNotification(message, type = 'info') {
-    const notification = document.getElementById('notification');
-    notification.textContent = message;
-    notification.className = `notification ${type}`;
-    notification.classList.remove('hidden');
+// 创建聊天项
+function createChatItem(target, lastMsg, unread, onClick) {
+    const item = document.createElement('div');
+    item.className = 'chat-item';
+    item.onclick = onClick;
     
-    setTimeout(() => {
-        notification.classList.add('hidden');
-    }, 3000);
+    const time = lastMsg ? formatTime(lastMsg.timestamp) : '';
+    const lastMsgText = lastMsg ? (lastMsg.content.length > 20 ? lastMsg.content.substring(0, 20) + '...' : lastMsg.content) : '暂无消息';
+    
+    item.innerHTML = `
+        <div class="chat-avatar">${target.avatar}</div>
+        <div class="chat-info">
+            <div class="chat-name">${target.name}</div>
+            <div class="chat-last-msg">${lastMsgText}</div>
+        </div>
+        <div class="chat-time">${time}</div>
+        ${unread > 0 ? `<div class="unread-badge">${unread}</div>` : ''}
+    `;
+    
+    return item;
 }
 
-// --- 角色管理 ---
+// 格式化时间
+function formatTime(timestamp) {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now - date;
+    
+    if (diff < 60 * 1000) {
+        return '刚刚';
+    } else if (diff < 60 * 60 * 1000) {
+        return Math.floor(diff / (60 * 1000)) + '分钟前';
+    } else if (diff < 24 * 60 * 60 * 1000) {
+        return date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0');
+    } else {
+        return Math.floor(diff / (24 * 60 * 60 * 1000)) + '天前';
+    }
+}
+
+// 更新联系人列表
+function updateContactsList() {
+    const container = document.getElementById('contacts-list');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    // 添加AI角色
+    appState.aiCharacters.forEach(char => {
+        const item = document.createElement('div');
+        item.className = 'contact-item';
+        item.onclick = () => openSingleChat(char.id);
+        item.innerHTML = `
+            <div class="contact-avatar">${char.avatar}</div>
+            <div class="contact-info">
+                <div class="contact-name">${char.name}</div>
+            </div>
+        `;
+        container.appendChild(item);
+    });
+    
+    // 添加用户角色
+    appState.userCharacters.forEach(char => {
+        const item = document.createElement('div');
+        item.className = 'contact-item';
+        item.onclick = () => openSingleChat(char.id);
+        item.innerHTML = `
+            <div class="contact-avatar">${char.avatar}</div>
+            <div class="contact-info">
+                <div class="contact-name">${char.name}</div>
+            </div>
+        `;
+        container.appendChild(item);
+    });
+}
+
+// 更新未读消息计数
+function updateUnreadCount() {
+    let totalUnread = 0;
+    
+    // 计算总未读数
+    Object.values(appState.unreadCounts).forEach(count => {
+        totalUnread += count;
+    });
+    
+    const badge = document.getElementById('unread-count');
+    if (totalUnread > 0) {
+        badge.textContent = totalUnread;
+        badge.classList.remove('hidden');
+    } else {
+        badge.classList.add('hidden');
+    }
+}
+
+// 角色编辑器功能
 function toggleCharEditor() {
-    const editor = document.getElementById('char-editor');
-    editor.classList.toggle('hidden');
+    document.getElementById('char-editor').classList.toggle('hidden');
+    if (!document.getElementById('char-editor').classList.contains('hidden')) {
+        switchEditorTab('ai');
+        updateAvailableChars();
+    }
 }
 
-function saveCharacter() {
+function closeCharEditor() {
+    document.getElementById('char-editor').classList.add('hidden');
+}
+
+function switchEditorTab(tab) {
+    // 隐藏所有标签页
+    document.querySelectorAll('.editor-tab-content').forEach(el => {
+        el.classList.add('hidden');
+    });
+    
+    // 移除所有激活状态
+    document.querySelectorAll('.editor-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // 显示目标标签页
+    switch(tab) {
+        case 'ai':
+            document.getElementById('ai-char-tab').classList.remove('hidden');
+            document.querySelector('.editor-tab:nth-child(1)').classList.add('active');
+            break;
+        case 'user':
+            document.getElementById('user-char-tab').classList.remove('hidden');
+            document.querySelector('.editor-tab:nth-child(2)').classList.add('active');
+            break;
+        case 'group':
+            document.getElementById('group-tab').classList.remove('hidden');
+            document.querySelector('.editor-tab:nth-child(3)').classList.add('active');
+            break;
+    }
+}
+
+// 更新可选角色列表
+function updateAvailableChars() {
+    const container = document.getElementById('available-chars');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    // 添加AI角色
+    appState.aiCharacters.forEach(char => {
+        const item = document.createElement('div');
+        item.className = 'char-select-item';
+        item.innerHTML = `
+            <input type="checkbox" id="select-${char.id}" value="${char.id}">
+            <div class="char-select-avatar">${char.avatar}</div>
+            <label for="select-${char.id}">${char.name}</label>
+        `;
+        container.appendChild(item);
+    });
+    
+    // 添加用户角色
+    appState.userCharacters.forEach(char => {
+        const item = document.createElement('div');
+        item.className = 'char-select-item';
+        item.innerHTML = `
+            <input type="checkbox" id="select-${char.id}" value="${char.id}">
+            <div class="char-select-avatar">${char.avatar}</div>
+            <label for="select-${char.id}">${char.name}</label>
+        `;
+        container.appendChild(item);
+    });
+    
+    // 添加当前用户
+    const userItem = document.createElement('div');
+    userItem.className = 'char-select-item';
+    userItem.innerHTML = `
+        <input type="checkbox" id="select-user" value="user">
+        <div class="char-select-avatar">${appState.currentUser.avatar}</div>
+        <label for="select-user">${appState.currentUser.name} (我)</label>
+    `;
+    container.appendChild(userItem);
+}
+
+// 保存AI角色
+function saveAICharacter() {
     const name = document.getElementById('char-name').value.trim();
     const prompt = document.getElementById('char-prompt').value.trim();
     
@@ -151,387 +442,189 @@ function saveCharacter() {
     }
     
     const newCharacter = {
+        id: 'ai-' + Date.now(),
         name,
         prompt: prompt || '这是一个AI角色。',
-        isActive: true
+        avatar: '🤖',
+        isAI: true
     };
     
-    appState.characters.push(newCharacter);
-    appState.currentCharacter = newCharacter;
-    document.getElementById('chat-title').textContent = `微信 (${name})`;
+    appState.aiCharacters.push(newCharacter);
     
     // 清空表单
     document.getElementById('char-name').value = '';
     document.getElementById('char-prompt').value = '';
     
-    toggleCharEditor();
-    updateCharacterList();
+    updateChatList();
+    updateContactsList();
+    updateAvailableChars();
     saveToLocalStorage();
-    showNotification(`角色"${name}"已保存`);
+    showNotification(`AI角色"${name}"已保存`);
 }
 
-function updateCharacterList() {
-    const charCount = document.getElementById('char-count');
-    charCount.textContent = appState.characters.length;
-}
-
-function openCharacterList() {
-    // 这里可以扩展显示角色列表
-    showNotification(`共有 ${appState.characters.length} 个角色`);
-}
-
-// --- 聊天功能 ---
-async function sendMessage() {
-    const input = document.getElementById('user-input');
-    const text = input.value.trim();
-    const apiKey = document.getElementById('api-key').value;
-    const apiUrl = document.getElementById('api-url').value;
-    const model = document.getElementById('model-select').value;
+// 保存用户角色
+function saveUserCharacter() {
+    const name = document.getElementById('user-char-name').value.trim();
+    const prompt = document.getElementById('user-char-prompt').value.trim();
     
-    if (!text) return;
-    if (!apiKey) { 
-        showNotification('请先在AI设置中填入API Key', 'error');
-        openApp('settings');
+    if (!name) {
+        showNotification('请输入角色名字', 'error');
         return;
     }
     
-    // 添加用户消息
-    appendMessage('user', text);
+    const newCharacter = {
+        id: 'user-char-' + Date.now(),
+        name,
+        prompt: prompt || '这是一个用户角色。',
+        avatar: '👤',
+        isUser: true
+    };
+    
+    appState.userCharacters.push(newCharacter);
+    
+    // 清空表单
+    document.getElementById('user-char-name').value = '';
+    document.getElementById('user-char-prompt').value = '';
+    
+    updateChatList();
+    updateContactsList();
+    updateAvailableChars();
+    saveToLocalStorage();
+    showNotification(`用户角色"${name}"已保存`);
+}
+
+// 创建群聊
+function createGroupChat() {
+    const selectedItems = document.querySelectorAll('#available-chars input[type="checkbox"]:checked');
+    if (selectedItems.length < 2) {
+        showNotification('请选择至少2个成员创建群聊', 'error');
+        return;
+    }
+    
+    const selectedIds = Array.from(selectedItems).map(item => item.value);
+    const groupName = document.getElementById('group-name').value.trim() || 
+                     `群聊${appState.groupChats.length + 1}`;
+    
+    // 获取群成员信息
+    const members = [];
+    selectedIds.forEach(id => {
+        if (id === 'user') {
+            members.push(appState.currentUser);
+        } else {
+            const aiChar = appState.aiCharacters.find(c => c.id === id);
+            const userChar = appState.userCharacters.find(c => c.id === id);
+            if (aiChar) members.push(aiChar);
+            if (userChar) members.push(userChar);
+        }
+    });
+    
+    const newGroup = {
+        id: 'group-' + Date.now(),
+        name: groupName,
+        members: members,
+        avatar: '👥',
+        isGroup: true
+    };
+    
+    appState.groupChats.push(newGroup);
+    
+    // 清空表单
+    document.getElementById('group-name').value = '';
+    selectedItems.forEach(item => item.checked = false);
+    
+    updateChatList();
+    updateContactsList();
+    saveToLocalStorage();
+    showNotification(`群聊"${groupName}"创建成功`);
+    closeCharEditor();
+}
+
+// 发送单聊消息
+function sendSingleMessage() {
+    if (appState.currentChat.type !== 'single') return;
+    
+    const input = document.getElementById('single-user-input');
+    const text = input.value.trim();
+    const targetId = appState.currentChat.targetId;
+    
+    if (!text || !targetId) return;
+    
+    const allCharacters = [...appState.aiCharacters, ...appState.userCharacters];
+    const character = allCharacters.find(c => c.id === targetId);
+    
+    if (!character) return;
+    
+    // 发送用户消息
+    sendMessageToChat(targetId, 'single', text, appState.currentUser);
+    
     input.value = '';
     
-    // 显示正在输入
-    const loadingId = 'loading-' + Date.now();
-    appendMessage('ai', '正在输入...', loadingId);
-    
-    try {
-        const response = await fetch(`${apiUrl}/chat/completions`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json', 
-                'Authorization': `Bearer ${apiKey}` 
-            },
-            body: JSON.stringify({
-                model: model,
-                messages: [
-                    { role: "system", content: appState.currentCharacter.prompt },
-                    { role: "user", content: text }
-                ],
-                stream: false
-            })
-        });
-        
-        if (!response.ok) {
-            throw new Error(`API错误: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        document.getElementById(loadingId).remove();
-        
-        const aiResponse = data.choices[0].message.content;
-        appendMessage('ai', aiResponse);
-        
-        // 随机触发AI角色发朋友圈
-        if (Math.random() < 0.3) {
-            setTimeout(generateAiMoment, 2000);
-        }
-        
-    } catch (error) {
-        console.error('API调用失败:', error);
-        document.getElementById(loadingId).innerText = "连接失败，请检查API配置。";
+    // 如果是AI角色，自动回复
+    if (character.isAI) {
+        setTimeout(() => {
+            generateAIResponse(character, text, targetId);
+        }, 1000);
     }
 }
 
-function appendMessage(role, content, id = null) {
-    const win = document.getElementById('chat-window');
-    const div = document.createElement('div');
-    div.className = `msg ${role}`;
-    if (id) div.id = id;
+// 发送群聊消息
+function sendGroupMessage() {
+    if (appState.currentChat.type !== 'group') return;
     
-    const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-    div.innerHTML = `
-        <div class="msg-content">${content.replace(/\n/g, '<br>')}</div>
-        <div class="msg-time">${time}</div>
-    `;
+    const input = document.getElementById('group-user-input');
+    const text = input.value.trim();
+    const groupId = appState.currentChat.targetId;
     
-    win.appendChild(div);
-    win.scrollTop = win.scrollHeight;
-}
-
-function handleKeyPress(event) {
-    if (event.key === 'Enter') {
-        sendMessage();
-    }
-}
-
-// --- 朋友圈功能 ---
-function openPostEditor() {
-    document.getElementById('post-editor').classList.remove('hidden');
-}
-
-function closePostEditor() {
-    document.getElementById('post-editor').classList.add('hidden');
-    document.getElementById('post-content').value = '';
-}
-
-function postMoment() {
-    const content = document.getElementById('post-content').value.trim();
-    if (!content) {
-        showNotification('请输入内容', 'error');
-        return;
-    }
+    if (!text || !groupId) return;
     
-    const moment = {
-        id: Date.now(),
-        author: '我',
-        avatar: '👤',
-        content: content,
-        time: '刚刚',
-        likes: 0,
-        liked: false,
-        comments: [],
-        isAI: false
+    const group = appState.groupChats.find(g => g.id === groupId);
+    if (!group) return;
+    
+    // 发送用户消息
+    sendMessageToChat(groupId, 'group', text, appState.currentUser);
+    
+    input.value = '';
+    
+    // 随机触发群成员回复
+    setTimeout(() => {
+        generateGroupResponse(group, text, groupId);
+    }, 2000);
+}
+
+// 发送消息到聊天
+function sendMessageToChat(chatId, chatType, text, sender) {
+    const message = {
+        id: 'msg-' + Date.now(),
+        senderId: sender.id,
+        senderName: sender.name,
+        senderAvatar: sender.avatar,
+        content: text,
+        timestamp: Date.now(),
+        type: 'text'
     };
     
-    appState.moments.unshift(moment);
-    renderMoments();
-    closePostEditor();
-    showNotification('动态发布成功');
-    saveToLocalStorage();
-    updateStats();
-}
-
-function generateRandomMoments() {
-    const sampleMoments = [
-        {
-            id: 1,
-            author: '花阳美苑',
-            avatar: '🌸',
-            content: '今天天气真好，适合出去散步呢~',
-            time: '今天 10:30',
-            likes: 3,
-            liked: false,
-            comments: [],
-            isAI: true
-        },
-        {
-            id: 2,
-            author: 'AI助手',
-            avatar: '🤖',
-            content: '刚刚学习了一个新算法，感觉很有收获！',
-            time: '昨天 15:20',
-            likes: 5,
-            liked: true,
-            comments: [
-                { author: '我', content: '好厉害！' },
-                { author: '花阳美苑', content: '可以教教我吗？' }
-            ],
-            isAI: true
-        }
-    ];
-    
-    appState.moments = [...sampleMoments, ...appState.moments];
-    renderMoments();
-}
-
-function generateAutoMoments() {
-    if (appState.characters.length === 0) return;
-    
-    const probability = appState.settings.autoMomentProbability / 100;
-    if (Math.random() < probability) {
-        setTimeout(generateAiMoment, Math.random() * 30000);
+    // 保存消息
+    if (!appState.conversations[chatId]) {
+        appState.conversations[chatId] = [];
     }
-}
-
-function generateAiMoment() {
-    if (appState.characters.length === 0) return;
+    appState.conversations[chatId].push(message);
     
-    const char = appState.characters[Math.floor(Math.random() * appState.characters.length)];
-    const contents = [
-        `${char.name}: 今天又是美好的一天！`,
-        `${char.name}: 刚刚完成了一个项目，好开心~`,
-        `${char.name}: 有人想聊聊天吗？`,
-        `${char.name}: 分享一首喜欢的诗...`,
-        `${char.name}: 学习新知识中...`
-    ];
-    
-    const moment = {
-        id: Date.now(),
-        author: char.name,
-        avatar: '🤖',
-        content: contents[Math.floor(Math.random() * contents.length)],
-        time: '刚刚',
-        likes: 0,
-        liked: false,
-        comments: [],
-        isAI: true
-    };
-    
-    appState.moments.unshift(moment);
-    renderMoments();
-    showNotification(`${char.name} 发布了一条新动态`);
-    saveToLocalStorage();
-    updateStats();
-}
-
-function renderMoments() {
-    const container = document.getElementById('moments-list');
-    if (!container) return;
-    
-    container.innerHTML = '';
-    
-    appState.moments.forEach(moment => {
-        const momentEl = document.createElement('div');
-        momentEl.className = 'moment-card';
-        momentEl.innerHTML = `
-            <div class="moment-header">
-                <div class="moment-avatar">${moment.avatar}</div>
-                <div class="moment-author">
-                    <h4>${moment.author}</h4>
-                    <div class="moment-time">${moment.time}</div>
-                </div>
-            </div>
-            <div class="moment-content">${moment.content}</div>
-            <div class="moment-actions">
-                <button class="like-btn ${moment.liked ? 'liked' : ''}" onclick="toggleLike(${moment.id})">
-                    <span>${moment.liked ? '❤️' : '🤍'}</span> ${moment.likes}
-                </button>
-                <button class="comment-btn" onclick="toggleComment(${moment.id})">
-                    <span>💬</span> ${moment.comments.length}
-                </button>
-            </div>
-            ${moment.comments.length > 0 ? `
-                <div class="comment-list">
-                    ${moment.comments.map(comment => `
-                        <div class="comment-item">
-                            <span class="comment-author">${comment.author}:</span>
-                            <span class="comment-content">${comment.content}</span>
-                        </div>
-                    `).join('')}
-                </div>
-            ` : ''}
-        `;
-        container.appendChild(momentEl);
-    });
-}
-
-function toggleLike(momentId) {
-    const moment = appState.moments.find(m => m.id === momentId);
-    if (moment) {
-        moment.liked = !moment.liked;
-        moment.likes += moment.liked ? 1 : -1;
-        renderMoments();
-        saveToLocalStorage();
+    // 如果不是当前聊天，增加未读数
+    if (appState.currentChat.targetId !== chatId) {
+        appState.unreadCounts[chatId] = (appState.unreadCounts[chatId] || 0) + 1;
+        updateUnreadCount();
     }
-}
-
-// --- 世界书功能 ---
-function openWorldbookImporter() {
-    document.getElementById('worldbook-importer').classList.toggle('hidden');
-}
-
-function importWorldbook(input) {
-    const file = input.files[0];
-    if (!file) return;
     
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const worldbook = JSON.parse(e.target.result);
-            worldbook.id = 'worldbook-' + Date.now();
-            appState.worldbooks.push(worldbook);
-            renderWorldbooks();
-            saveToLocalStorage();
-            showNotification(`世界书"${worldbook.name}"导入成功`);
-        } catch (error) {
-            showNotification('文件格式错误', 'error');
-        }
-    };
-    reader.readAsText(file);
-}
-
-function copyWorldbookTemplate() {
-    const template = document.getElementById('worldbook-template');
-    template.select();
-    document.execCommand('copy');
-    showNotification('模板已复制到剪贴板');
-}
-
-function renderWorldbooks() {
-    const container = document.getElementById('worldbook-list');
-    if (!container) return;
+    // 更新聊天列表
+    updateChatList();
     
-    container.innerHTML = '';
-    
-    appState.worldbooks.forEach(wb => {
-        const card = document.createElement('div');
-        card.className = 'worldbook-card';
-        card.innerHTML = `
-            <h4>${wb.name}</h4>
-            <p>作者: ${wb.author}</p>
-            <p>文风: ${wb.style}</p>
-        `;
-        card.onclick = () => loadWorldbook(wb.id);
-        container.appendChild(card);
-    });
-    
-    updateStats();
-}
-
-function loadWorldbook(worldbookId) {
-    const worldbook = appState.worldbooks.find(wb => wb.id === worldbookId);
-    if (worldbook) {
-        showNotification(`已加载世界书: ${worldbook.name}`);
+    // 如果正在查看这个聊天，显示消息
+    if (appState.currentChat.targetId === chatId) {
+        displayMessage(message, chatType === 'group');
     }
-}
-
-// --- 主题壁纸功能 ---
-function changeTheme(theme) {
-    const screen = document.getElementById('main-screen');
-    // 移除所有主题类
-    screen.className = 'screen';
-    screen.classList.add('theme-' + theme);
-    appState.currentTheme = theme;
-    saveToLocalStorage();
-    showNotification(`已切换为${theme}主题`);
-}
-
-function setWallpaper(wallpaper) {
-    const bg = document.getElementById('desktop-bg');
-    switch(wallpaper) {
-        case 'gradient1':
-            bg.style.background = 'linear-gradient(45deg, #667eea, #764ba2)';
-            break;
-        case 'gradient2':
-            bg.style.background = 'linear-gradient(45deg, #ff9a9e, #fad0c4)';
-            break;
-        case 'gradient3':
-            bg.style.background = 'linear-gradient(45deg, #a1c4fd, #c2e9fb)';
-            break;
-    }
-    showNotification('壁纸已更换');
-}
-
-function uploadWallpaper() {
-    // 这里可以添加上传壁纸的功能
-    showNotification('壁纸上传功能开发中...');
-}
-
-// --- 设置功能 ---
-function saveSettings() {
-    appState.settings.apiUrl = document.getElementById('api-url').value;
-    appState.settings.apiKey = document.getElementById('api-key').value;
-    appState.settings.model = document.getElementById('model-select').value;
-    appState.settings.autoMomentProbability = parseInt(document.getElementById('auto-moment-prob').value);
     
     saveToLocalStorage();
-    showNotification('设置已保存');
-    closeApp();
 }
 
-// --- 统计功能 ---
-function updateStats() {
-    document.getElementById('char-count').textContent = appState.characters.length;
-    document.getElementById('moment-count').textContent = appState.moments.length;
-    document.getElementById('worldbook-count').textContent = appState.worldbooks.length;
-}
-
+// 显示消息
+function displayMessage(message
