@@ -2,202 +2,165 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>花阳美苑</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="responsive-container">
-        <div class="phone-case">
-            <div class="screen" id="main-screen">
-                <!-- 状态栏 - 修改为顶部状态栏 -->
+    <div class="container">
+        <!-- 平板背景 -->
+        <div class="tablet-frame">
+            <!-- 平板屏幕 -->
+            <div class="screen" id="screen">
+                <!-- 状态栏 -->
                 <div class="status-bar">
-                    <div class="left-status">
+                    <div class="time-display">
+                        <div class="time" id="time">19:00</div>
+                        <div class="date" id="date">2026年04月17日</div>
+                    </div>
+                    <div class="status-icons">
                         <span>5G</span>
                         <span class="signal">📶</span>
-                    </div>
-                    <div class="right-status">
                         <span class="battery">81%</span>
                     </div>
                 </div>
 
-                <!-- 主桌面 -->
-                <div id="desktop" class="desktop">
-                    <!-- 时间日期居中显示 -->
-                    <div class="time-date-container">
-                        <div class="time-large" id="real-time">19:00</div>
-                        <div class="date-small" id="real-date">2026年04月17日</div>
-                    </div>
-                    
-                    <!-- 应用网格 -->
-                    <div class="icon-grid">
-                        <div class="app-icon" data-app="wechat">
-                            <div class="icon-box wechat-bg">💬</div>
-                            <span>微信</span>
+                <!-- 桌面图标 -->
+                <div class="desktop" id="desktop">
+                    <div class="apps-grid">
+                        <div class="app" onclick="openApp('wechat')">
+                            <div class="app-icon wechat">💬</div>
+                            <div class="app-name">微信</div>
                         </div>
-                        <div class="app-icon" data-app="worldbook">
-                            <div class="icon-box worldbook-bg">📖</div>
-                            <span>世界书</span>
+                        <div class="app" onclick="openApp('worldbook')">
+                            <div class="app-icon worldbook">📖</div>
+                            <div class="app-name">世界书</div>
                         </div>
-                        <div class="app-icon" data-app="theme-wallpaper">
-                            <div class="icon-box theme-bg">🎨</div>
-                            <span>主题壁纸</span>
+                        <div class="app" onclick="openApp('theme')">
+                            <div class="app-icon theme">🎨</div>
+                            <div class="app-name">主题壁纸</div>
                         </div>
-                        <div class="app-icon" data-app="settings">
-                            <div class="icon-box settings-bg">⚙️</div>
-                            <span>AI设置</span>
-                        </div>
-                    </div>
-
-                    <!-- 底部导航 -->
-                    <div class="bottom-nav">
-                        <div class="nav-icon" data-theme="sunny">☀️</div>
-                        <div class="nav-icon" data-theme="midnight">🌙</div>
-                        <div class="nav-icon" data-app="profile">👤</div>
-                    </div>
-                </div>
-
-                <!-- 微信应用 -->
-                <div id="app-wechat" class="app-window">
-                    <div class="app-header">
-                        <button class="back-btn" data-close>⬅</button>
-                        <span>微信</span>
-                        <button class="add-char-btn" id="add-char-btn">👤+</button>
-                    </div>
-                    
-                    <div class="wechat-content">
-                        <!-- 聊天列表 -->
-                        <div id="chat-list" class="chat-list">
-                            <!-- 聊天列表会动态生成 -->
-                        </div>
-                    </div>
-                    
-                    <!-- 角色编辑器 -->
-                    <div id="char-editor" class="char-editor">
-                        <div class="char-editor-header">
-                            <button class="back-btn" id="close-char-editor">⬅</button>
-                            <span>角色管理</span>
-                        </div>
-                        <div class="char-editor-tabs">
-                            <button class="editor-tab active" data-editor-tab="ai">AI角色</button>
-                            <button class="editor-tab" data-editor-tab="user">我的角色</button>
-                        </div>
-                        
-                        <!-- AI角色编辑 -->
-                        <div id="ai-char-tab" class="editor-tab-content active">
-                            <input type="text" id="char-name" placeholder="角色名字...">
-                            <textarea id="char-prompt" placeholder="角色人设(Prompt)..."></textarea>
-                            <div class="char-actions">
-                                <button id="save-ai-char-btn">保存AI角色</button>
-                            </div>
-                        </div>
-                        
-                        <!-- 用户角色编辑 -->
-                        <div id="user-char-tab" class="editor-tab-content">
-                            <input type="text" id="user-char-name" placeholder="我的角色名字...">
-                            <textarea id="user-char-prompt" placeholder="我的人设..."></textarea>
-                            <div class="char-actions">
-                                <button id="save-user-char-btn">保存我的角色</button>
-                            </div>
+                        <div class="app" onclick="openApp('settings')">
+                            <div class="app-icon settings">⚙️</div>
+                            <div class="app-name">AI设置</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 世界书应用 -->
-                <div id="app-worldbook" class="app-window">
-                    <div class="app-header">
-                        <button class="back-btn" data-close>⬅</button>
-                        <span>世界书</span>
-                    </div>
-                    
-                    <div class="worldbook-container">
-                        <div id="worldbook-list" class="worldbook-list">
-                            <!-- 世界书列表会动态生成 -->
-                        </div>
-                    </div>
+                <!-- 底部导航 -->
+                <div class="bottom-nav">
+                    <div class="nav-btn" onclick="changeTheme('sun')">☀️</div>
+                    <div class="nav-btn" onclick="changeTheme('moon')">🌙</div>
+                    <div class="nav-btn" onclick="openApp('profile')">👤</div>
                 </div>
-                
-                <!-- 主题壁纸应用 -->
-                <div id="app-theme-wallpaper" class="app-window">
-                    <div class="app-header">
-                        <button class="back-btn" data-close>⬅</button>
-                        <span>主题壁纸</span>
-                    </div>
-                    <div class="theme-wallpaper-container">
-                        <div class="section">
-                            <h3>主题设置</h3>
-                            <div class="theme-list">
-                                <button class="theme-btn" data-theme="default">经典蓝白</button>
-                                <button class="theme-btn" data-theme="dark">极夜黑</button>
-                                <button class="theme-btn" data-theme="sakura">樱花粉</button>
-                                <button class="theme-btn" data-theme="midnight">午夜蓝</button>
-                                <button class="theme-btn" data-theme="sunny">阳光橙</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- AI设置应用 -->
-                <div id="app-settings" class="app-window">
-                    <div class="app-header">
-                        <button class="back-btn" data-close>⬅</button>
-                        <span>AI设置</span>
-                    </div>
-                    <div class="settings-container">
-                        <div class="setting-item">
-                            <label>选择AI模型</label>
-                            <select id="model-select">
-                                <option value="deepseek-chat">DeepSeek-V3</option>
-                                <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-                                <option value="gpt-4o">GPT-4o</option>
-                            </select>
-                        </div>
-                        <div class="setting-item">
-                            <label>API 地址</label>
-                            <input type="text" id="api-url" placeholder="https://api.deepseek.com/v1" value="https://api.deepseek.com/v1">
-                        </div>
-                        <div class="setting-item">
-                            <label>API Key</label>
-                            <input type="password" id="api-key" placeholder="输入 API Key">
-                        </div>
-                        <button class="save-btn" id="save-settings-btn">保存设置</button>
-                    </div>
-                </div>
-                
-                <!-- 个人资料 -->
-                <div id="app-profile" class="app-window">
-                    <div class="app-header">
-                        <button class="back-btn" data-close>⬅</button>
-                        <span>个人资料</span>
-                    </div>
-                    <div class="profile-container">
-                        <div class="profile-avatar">👤</div>
-                        <h3>花晓</h3>
-                        <div class="profile-stats">
-                            <div class="stat">
-                                <span id="char-count">2</span>
-                                <small>角色</small>
-                            </div>
-                            <div class="stat">
-                                <span id="moment-count">0</span>
-                                <small>动态</small>
-                            </div>
-                            <div class="stat">
-                                <span id="worldbook-count">0</span>
-                                <small>世界书</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="home-indicator"></div>
             </div>
         </div>
+
+        <!-- 应用窗口 -->
+        
+        <!-- 微信应用 -->
+        <div class="app-window" id="wechat">
+            <div class="app-header">
+                <div class="back-btn" onclick="closeApp()">←</div>
+                <div class="app-title">微信</div>
+                <div class="add-btn" onclick="showCharEditor()">+</div>
+            </div>
+            <div class="app-content">
+                <div class="chat-list">
+                    <!-- 聊天列表会动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 世界书应用 -->
+        <div class="app-window" id="worldbook">
+            <div class="app-header">
+                <div class="back-btn" onclick="closeApp()">←</div>
+                <div class="app-title">世界书</div>
+                <div class="add-btn" onclick="importWorldbook()">+</div>
+            </div>
+            <div class="app-content">
+                <div class="worldbook-list">
+                    <div class="worldbook-item">
+                        <h3>默认世界</h3>
+                        <p>基础设定</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主题壁纸应用 -->
+        <div class="app-window" id="theme">
+            <div class="app-header">
+                <div class="back-btn" onclick="closeApp()">←</div>
+                <div class="app-title">主题壁纸</div>
+            </div>
+            <div class="app-content">
+                <div class="theme-list">
+                    <div class="theme-item" onclick="setTheme('blue')">经典蓝白</div>
+                    <div class="theme-item" onclick="setTheme('dark')">极夜黑</div>
+                    <div class="theme-item" onclick="setTheme('pink')">樱花粉</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI设置应用 -->
+        <div class="app-window" id="settings">
+            <div class="app-header">
+                <div class="back-btn" onclick="closeApp()">←</div>
+                <div class="app-title">AI设置</div>
+            </div>
+            <div class="app-content">
+                <div class="setting-item">
+                    <label>AI模型：</label>
+                    <select>
+                        <option>DeepSeek-V3</option>
+                        <option>Gemini 1.5 Pro</option>
+                        <option>GPT-4o</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label>API密钥：</label>
+                    <input type="password" placeholder="输入API密钥">
+                </div>
+                <button class="save-btn" onclick="saveSettings()">保存设置</button>
+            </div>
+        </div>
+
+        <!-- 个人资料 -->
+        <div class="app-window" id="profile">
+            <div class="app-header">
+                <div class="back-btn" onclick="closeApp()">←</div>
+                <div class="app-title">个人资料</div>
+            </div>
+            <div class="app-content">
+                <div class="profile-info">
+                    <div class="avatar">👤</div>
+                    <h3>花晓</h3>
+                    <p>女，认认真真，战战兢兢</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 角色编辑器 -->
+        <div class="modal" id="charEditor">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>创建角色</h3>
+                    <div class="close-btn" onclick="closeCharEditor()">×</div>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="charName" placeholder="角色名字">
+                    <textarea id="charPrompt" placeholder="角色设定"></textarea>
+                    <button onclick="saveCharacter()">保存角色</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 通知 -->
+        <div class="notification" id="notification"></div>
     </div>
-    
-    <!-- 通知系统 -->
-    <div id="notification" class="notification"></div>
-    
+
     <script src="script.js"></script>
 </body>
 </html>
