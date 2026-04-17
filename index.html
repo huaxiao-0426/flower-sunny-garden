@@ -3,86 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>花阳美苑 OS</title>
+    <title>花阳美苑 OS Pro</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="phone-container">
-        <div class="screen" id="main-screen">
-            
+    <div class="phone-frame">
+        <div class="screen" id="screen-root">
             <div class="status-bar">
-                <span id="real-time">15:00</span>
+                <span id="os-time">12:00</span>
                 <div class="status-right">5G 📶 81% 🔋</div>
             </div>
 
-            <div id="desktop" class="layer">
-                <div class="clock-widget">
-                    <h1 id="big-time">15:12</h1>
-                    <p id="big-date">2026年04月17日</p >
+            <div id="layer-desktop" class="layer active">
+                <div class="home-widgets">
+                    <h1 id="home-time">12:00</h1>
+                    <p id="home-date">2026年04月17日</p >
                 </div>
-                
-                <div class="app-grid">
-                    <div class="app-item" onclick="openApp('wechat')">
-                        <div class="icon icon-wechat">💬</div>
+                <div class="icon-grid">
+                    <div class="app-icon" onclick="launchApp('wechat')">
+                        <div class="img-box wechat">💬</div>
                         <span>微信</span>
                     </div>
-                    <div class="app-item" onclick="openApp('worldbook')">
-                        <div class="icon icon-world">📖</div>
-                        <span>世界书</span>
-                    </div>
-                    <div class="app-item" onclick="openApp('settings')">
-                        <div class="icon icon-settings">⚙️</div>
-                        <span>AI设置</span>
-                    </div>
-                    <div class="app-item" onclick="openApp('theme')">
-                        <div class="icon icon-theme">🎨</div>
-                        <span>主题壁纸</span>
+                    <div class="app-icon" onclick="launchApp('settings')">
+                        <div class="img-box settings">⚙️</div>
+                        <span>系统设置</span>
                     </div>
                 </div>
             </div>
 
-            <div id="app-wechat" class="app-window layer hidden">
-                <div class="app-header">
-                    <button class="back-btn" onclick="closeApp()">⇠</button>
-                    <span id="chat-target">微信 (待机)</span>
-                    <button class="action-btn" onclick="toggleCharEditor()">👤+</button>
+            <div id="app-wechat" class="app-window layer">
+                <div class="wechat-header">
+                    <div id="wechat-title-box">
+                        <span id="back-to-home" onclick="exitApp()">⇠</span>
+                        <span id="wechat-title">微信</span>
+                    </div>
+                    <div class="header-actions">
+                        <button onclick="showCreateGroup()" title="发起群聊">+</button>
+                    </div>
                 </div>
-                <div id="char-editor" class="editor-panel hidden">
-                    <input type="text" id="char-name" placeholder="角色名字 (如: 花阳)">
-                    <textarea id="char-prompt" placeholder="角色人设描述..."></textarea>
-                    <button onclick="saveChar()">确定设定</button>
+
+                <div id="wechat-content" class="wechat-body">
+                    <div id="view-chats" class="sub-view"></div>
+                    <div id="view-moments" class="sub-view hidden">
+                        <div class="moments-header">
+                            <button onclick="postMoment()">📷 发布朋友圈</button>
+                        </div>
+                        <div id="moments-list"></div>
+                    </div>
+                    <div id="view-contacts" class="sub-view hidden">
+                        <button class="add-char-btn" onclick="showCharEditor()">👤 新增角色设定</button>
+                        <div id="contacts-list"></div>
+                    </div>
                 </div>
-                <div id="chat-box" class="chat-content"></div>
-                <div class="input-bar">
-                    <input type="text" id="user-msg" placeholder="说点什么...">
-                    <button onclick="sendChat()">发送</button>
+
+                <div class="wechat-tabs">
+                    <div onclick="switchTab('chats')">💬 消息</div>
+                    <div onclick="switchTab('moments')">🎡 朋友圈</div>
+                    <div onclick="switchTab('contacts')">👤 通讯录</div>
                 </div>
             </div>
 
-            <div id="app-settings" class="app-window layer hidden">
-                <div class="app-header">
-                    <button class="back-btn" onclick="closeApp()">⇠</button>
-                    <span>API 设置</span>
+            <div id="layer-chatting" class="app-window layer">
+                <div class="wechat-header">
+                    <span onclick="switchTab('chats')">⇠ 返回</span>
+                    <span id="active-chat-name">聊天对象</span>
+                    <span onclick="showRoomSettings()">⚙️</span>
                 </div>
-                <div class="config-body">
-                    <label>接口地址</label>
-                    <input type="text" id="api-url" value="https://api.deepseek.com/v1">
-                    <label>API Key</label>
-                    <input type="password" id="api-key" placeholder="在此输入你的 Key">
-                    <label>选择模型</label>
-                    <select id="model-select">
-                        <option value="deepseek-chat">DeepSeek-V3</option>
-                        <option value="deepseek-reasoner">DeepSeek-R1</option>
-                        <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-                    </select>
-                    <button class="save-btn" onclick="closeApp()">保存并返回</button>
+                <div id="chat-messages" class="chat-area"></div>
+                <div class="chat-input-bar">
+                    <input type="text" id="chat-input" placeholder="输入消息...">
+                    <button onclick="sendMessage()">发送</button>
                 </div>
             </div>
 
-            <div class="dock">
-                <div class="dock-item">☀️</div>
-                <div class="dock-item">🌙</div>
-                <div class="dock-item" onclick="openApp('wechat')">💬</div>
+            <div id="modal-overlay" class="modal hidden" onclick="closeModal()">
+                <div class="modal-content" onclick="event.stopPropagation()">
+                    <h3 id="modal-title">设置</h3>
+                    <div id="modal-body"></div>
+                    <div class="modal-btns">
+                        <button onclick="closeModal()">取消</button>
+                        <button class="confirm" id="modal-confirm">确定</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
