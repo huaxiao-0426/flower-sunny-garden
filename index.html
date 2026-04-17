@@ -3,53 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>花阳美苑 - 我的 AI 助手</title>
+    <title>花阳美苑 OS</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="phone-case">
-        <div class="screen">
+        <div class="screen" id="phone-screen">
+            
             <div class="status-bar">
-                <span id="real-time">00:00</span>
-                <div class="status-icons">
-                    <span>📶</span>
-                    <span>🔋</span>
+                <span id="real-time">12:00</span>
+                <div class="status-icons">📶 🔋</div>
+            </div>
+
+            <div id="home-screen" class="home-screen">
+                <div class="desktop-clock">
+                    <h1 id="large-time">12:00</h1>
+                    <p>4月15日 星期三</p >
+                </div>
+                
+                <div class="icon-grid">
+                    <div class="icon-item" onclick="openApp('wechat')">
+                        <div class="icon wechat">💬</div>
+                        <span>微信</span>
+                    </div>
+                    <div class="icon-item" onclick="openConfig()">
+                        <div class="icon settings">⚙️</div>
+                        <span>API设置</span>
+                    </div>
+                    <div class="icon-item">
+                        <div class="icon theme">🎨</div>
+                        <span>主题</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="app-header">
-                <span class="app-name">花阳美苑</span>
-                <button id="config-toggle">⚙️ 设置</button>
+            <div id="app-wechat" class="app-window hidden">
+                <div class="app-header">
+                    <button onclick="closeApp('wechat')">◀ 返回</button>
+                    <span id="chat-title">微信 (新角色)</span>
+                    <button onclick="togglePrompt()">人设</button>
+                </div>
+                <div id="chat-window" class="chat-window"></div>
+                <div class="input-area">
+                    <input type="text" id="user-input" placeholder="发送消息...">
+                    <button id="send-btn">发送</button>
+                </div>
             </div>
 
             <div id="config-panel" class="config-panel hidden">
-                <h3>⚙️ 接口配置</h3>
-                <label>API 地址：</label>
-                <input type="text" id="api-url" placeholder="例如: https://api.deepseek.com/v1">
-                <label>API Key：</label>
-                <input type="password" id="api-key" placeholder="在此输入你的 Key">
-                <label>选择模型：</label>
+                <div class="panel-header">
+                    <h3>接口配置</h3>
+                    <button class="close-btn" onclick="closeConfig()">×</button>
+                </div>
+                <label>API 地址</label>
+                <input type="text" id="api-url" placeholder="https://api.deepseek.com/v1">
+                <label>API Key</label>
+                <input type="password" id="api-key" placeholder="填入 Key">
+                <label>选择模型</label>
                 <select id="model-select">
                     <option value="deepseek-chat">DeepSeek-V3</option>
+                    <option value="deepseek-reasoner">DeepSeek-R1 (深度思考)</option>
                     <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
                     <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                    <option value="gpt-4o">GPT-4o</option>
+                    <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
                 </select>
-                <button id="save-config">确认修改</button>
+                <button id="save-config">保存设置</button>
             </div>
 
-            <div id="chat-window" class="chat-window">
-                <div class="msg ai">欢迎来到 <b>花阳美苑</b>。请先点击右上角配置 API 信息，开启我们的对话。</div>
+            <div id="prompt-panel" class="config-panel hidden">
+                <div class="panel-header">
+                    <h3>人设/角色设计</h3>
+                    <button class="close-btn" onclick="togglePrompt()">×</button>
+                </div>
+                <textarea id="system-prompt" placeholder="例如：你现在是一个温柔可爱的邻家女孩，名字叫花阳..." rows="6" style="width:100%; border-radius:10px; padding:10px;"></textarea>
+                <button onclick="togglePrompt()" style="margin-top:10px;">确认人设</button>
             </div>
 
-            <div class="input-area">
-                <input type="text" id="user-input" placeholder="给花阳美苑发消息...">
-                <button id="send-btn">➤</button>
-            </div>
-            
             <div class="home-indicator"></div>
         </div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
