@@ -3,21 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的 AI 小手机</title>
+    <title>花阳美苑 - 我的 AI 助手</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="phone-case">
         <div class="screen">
-            <div class="status-bar">12:00 🔋</div>
-            <div id="chat-window" class="chat-window">
+            <div class="status-bar">
+                <span id="real-time">00:00</span>
+                <div class="status-icons">
+                    <span>📶</span>
+                    <span>🔋</span>
                 </div>
-            <div class="input-area">
-                <input type="text" id="user-input" placeholder="发消息...">
-                <button id="send-btn">发送</button>
             </div>
+
+            <div class="app-header">
+                <span class="app-name">花阳美苑</span>
+                <button id="config-toggle">⚙️ 设置</button>
+            </div>
+
+            <div id="config-panel" class="config-panel hidden">
+                <h3>⚙️ 接口配置</h3>
+                <label>API 地址：</label>
+                <input type="text" id="api-url" placeholder="例如: https://api.deepseek.com/v1">
+                <label>API Key：</label>
+                <input type="password" id="api-key" placeholder="在此输入你的 Key">
+                <label>选择模型：</label>
+                <select id="model-select">
+                    <option value="deepseek-chat">DeepSeek-V3</option>
+                    <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                    <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                </select>
+                <button id="save-config">确认修改</button>
+            </div>
+
+            <div id="chat-window" class="chat-window">
+                <div class="msg ai">欢迎来到 <b>花阳美苑</b>。请先点击右上角配置 API 信息，开启我们的对话。</div>
+            </div>
+
+            <div class="input-area">
+                <input type="text" id="user-input" placeholder="给花阳美苑发消息...">
+                <button id="send-btn">➤</button>
+            </div>
+            
+            <div class="home-indicator"></div>
         </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
