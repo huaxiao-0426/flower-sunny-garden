@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>花阳美苑</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="phone-case">
+        <div class="screen" id="main-screen">
+            <!-- 状态栏 -->
+            <div class="status-bar">
+                <div class="left-status">
+                    <span id="real-time">00:00</span>
+                </div>
+                <div class="center-status">
+                    <span id="real-date">2026年04月17日</span>
+                </div>
+                <div class="right-status">
+                    <span>5G</span>
+                    <span class="signal">📶</span>
+                    <span class="battery">81%</span>
+                </div>
+            </div>
+
+            <!-- 主桌面 -->
+            <div id="desktop" class="desktop">
+                <!-- 桌面背景图 -->
+                <div class="desktop-bg" id="desktop-bg"></div>
+                
+                <!-- 应用网格 (一行3个) -->
+                <div class="icon-grid">
+                    <div class="app-icon" onclick="openApp('wechat')">
+                        <div class="icon-box wechat-bg">💬</div>
+                        <span>微信</span>
+                    </div>
+                    <div class="app-icon" onclick="openApp('worldbook')">
+                        <div class="icon-box worldbook-bg">📖</div>
+                        <span>世界书</span>
+                    </div>
+                    <div class="app-icon" onclick="openApp('theme-wallpaper')">
+                        <div class="icon-box theme-bg">🎨</div>
+                        <span>主题壁纸</span>
+                    </div>
+                    <div class="app-icon" onclick="openApp('settings')">
+                        <div class="icon-box settings-bg">⚙️</div>
+                        <span>AI设置</span>
+                    </div>
+                </div>
+
+                <!-- 底部导航 -->
+                <div class="bottom-nav">
+                    <div class="nav-icon" onclick="changeTheme('sunny')">☀️</div>
+                    <div class="nav-icon" onclick="changeTheme('midnight')">🌙</div>
+                    <div class="nav-icon" onclick="openApp('profile')">👤</div>
+                </div>
+            </div>
+
+            <!-- 微信应用 -->
+            <div id="app-wechat" class="app-window hidden">
+                <!-- 微信顶部状态栏 -->
+                <div class="wechat-top-bar">
+                    <span id="wechat-time">00:00</span>
+                    <span>微信</span>
+                    <button class="add-char-btn" onclick="toggleCharEditor()">👤+</button>
+                </div>
+                
+                <!-- 微信聊天列表 -->
+                <div id="chat-list-container" class="chat-list-container active">
+                    <div class="wechat-header">
+                        <span id="wechat-title">微信</span>
+                        <div class="wechat-header-right">
+                            <button class="search-btn" onclick="searchChats()">🔍</button>
+                            <button class="add-btn" onclick="openNewChat()">+</button>
+                        </div>
+                    </div>
+                    
+                    <div id="chat-list" class="chat-list">
+                        <!-- 聊天列表会动态生成 -->
+                    </div>
+                    
+                    <!-- 微信底部导航 -->
+                    <div class="wechat-nav">
+                        <button class="nav-item active" onclick="switchWechatTab('chats')">
+                            <span>💬</span>
+                            <span id="unread-count" class="unread-badge hidden">0</span>
+                            <span>微信</span>
+                        </button>
+                        <button class="nav-item" onclick="switchWechatTab('contacts')">
+                            <span>👥</span>
+                            <span>通讯录</span>
+                        </button>
+                        <button class="nav-item" onclick="switchWechatTab('discover')">
+                            <span>🌍</span>
+                            <span>发现</span>
+                        </button>
+                        <button class="nav-item" onclick="switchWechatTab('profile')">
+                            <span>👤</span>
+                            <span>我</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 通讯录 -->
+                <div id="contacts-container" class="tab-content hidden">
+                    <div class="wechat-header">
+                        <span>通讯录</span>
+                    </div>
+                    <div id="contacts-list" class="contacts-list">
+                        <!-- 联系人列表会动态生成 -->
+                    </div>
+                </div>
+                
+                <!-- 发现（朋友圈） -->
+                <div id="discover-container" class="tab-content hidden">
+                    <div class="wechat-header">
+                        <span>发现</span>
+                    </div>
+                    <div class="discover-list">
+                        <div class="discover-item" onclick="openMoments()">
+                            <span>🌍</span>
+                            <span>朋友圈</span>
+                            <span class="discover-badge" id="moments-badge"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 我的 -->
+                <div id="profile-container" class="tab-content hidden">
+                    <div class="wechat-header">
+                        <span>我</span>
+                    </div>
+                    <div class="profile-content">
+                        <div class="user-info">
+                            <div class="user-avatar">👤</div>
+                            <div>
+                                <h4 id="user-name">用户</h4>
+                                <p>微信号: huayang_meiyuan</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 单聊界面 -->
+                <div id="single-chat" class="tab-content hidden">
+                    <div class="chat-header">
+                        <button class="back-btn" onclick="backToChatList()">⬅</button>
+                        <span id="chat-with-name">聊天</span>
+                    </div>
+                    <div id="single-chat-window" class="chat-window"></div>
+                    <div class="input-area">
+                        <input type="text" id="single-user-input" placeholder="发送消息..." onkeypress="handleSingleKeyPress(event)">
+                        <button id="single-send-btn" onclick="sendSingleMessage()">➤</button>
+                    </div>
+                </div>
+                
+                <!-- 群聊界面 -->
+                <div id="group-chat" class="tab-content hidden">
+                    <div class="chat-header">
+                        <button class="back-btn" onclick="backToChatList()">⬅</button>
+                        <span id="group-chat-name">群聊</span>
+                    </div>
+                    <div id="group-chat-window" class="chat-window"></div>
+                    <div class="input-area">
+                        <input type="text" id="group-user-input" placeholder="发送消息..." onkeypress="handleGroupKeyPress(event)">
+                        <button id="group-send-btn" onclick="sendGroupMessage()">➤</button>
+                    </div>
+                </div>
+                
+                <!-- 朋友圈详情 -->
+                <div id="moments-container" class="tab-content hidden">
+                    <div class="moments-header">
+                        <button class="back-btn" onclick="backToDiscover()">⬅</button>
+                        <span>朋友圈</span>
+                        <button class="camera-btn" onclick="openPostEditor()">📷</button>
+                    </div>
+                    <div class="moments-content">
+                        <div id="post-editor" class="post-editor hidden">
+                            <textarea id="post-content" placeholder="分享你的想法..."></textarea>
+                            <div class="post-actions">
+                                <button onclick="postMoment()">发布</button>
+                                <button onclick="closePostEditor()">取消</button>
+                            </div>
+                        </div>
+                        <div id="moments-list" class="moments-list"></div>
+                    </div>
+                </div>
+
+                <!-- 角色编辑器 -->
+                <div id="char-editor" class="char-editor hidden">
+                    <div class="char-editor-header">
+                        <button class="back-btn" onclick="closeCharEditor()">⬅</button>
+                        <span>角色管理</span>
+                    </div>
+                    <div class="char-editor-tabs">
+                        <button class="editor-tab active" onclick="switchEditorTab('ai')">AI角色</button>
+                        <button class="editor-tab" onclick="switchEditorTab('user')">我的角色</button>
+                        <button class="editor-tab" onclick="switchEditorTab('group')">群聊</button>
+                    </div>
+                    
+                    <!-- AI角色编辑 -->
+                    <div id="ai-char-tab" class="editor-tab-content active">
+                        <input type="text" id="char-name" placeholder="角色名字...">
+                        <textarea id="char-prompt" placeholder="角色人设(Prompt)..."></textarea>
+                        <div class="char-actions">
+                            <button onclick="saveAICharacter()">保存AI角色</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 用户角色编辑 -->
+                    <div id="user-char-tab" class="editor-tab-content hidden">
+                        <input type="text" id="user-char-name" placeholder="我的角色名字...">
+                        <textarea id="user-char-prompt" placeholder="我的人设..."></textarea>
+                        <div class="char-actions">
+                            <button onclick="saveUserCharacter()">保存我的角色</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 群聊编辑 -->
+                    <div id="group-tab" class="editor-tab-content hidden">
+                        <h4>选择群成员</h4>
+                        <div id="available-chars" class="char-select-list">
+                            <!-- 角色列表会动态生成 -->
+                        </div>
+                        <input type="text" id="group-name" placeholder="群聊名称...">
+                        <div class="char-actions">
+                            <button onclick="createGroupChat()">创建群聊</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 其他应用（保持不变） -->
+            <div id="app-worldbook" class="app-window hidden">
+                <!-- ... 世界书代码 ... -->
+            </div>
+            
+            <div id="app-theme-wallpaper" class="app-window hidden">
+                <!-- ... 主题壁纸代码 ... -->
+            </div>
+            
+            <div id="app-settings" class="app-window hidden">
+                <!-- ... AI设置代码 ... -->
+            </div>
+            
+            <div id="app-profile" class="app-window hidden">
+                <!-- ... 个人资料代码 ... -->
+            </div>
+
+            <div class="home-indicator"></div>
+        </div>
+    </div>
+    
+    <!-- 通知系统 -->
+    <div id="notification" class="notification hidden"></div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
+
