@@ -1,6 +1,6 @@
 // 应用状态管理
 let appState = {
-    // 用户自己的角色
+    // 当前用户
     currentUser: { 
         id: 'user-1',
         name: "花晓", 
@@ -36,20 +36,6 @@ let appState = {
     // 聊天记录
     conversations: {},
     
-    // 未读消息计数
-    unreadCounts: {},
-    
-    // 其他状态
-    worldbooks: [],
-    moments: [],
-    currentTheme: 'default',
-    settings: {
-        apiUrl: 'https://api.deepseek.com/v1',
-        apiKey: '',
-        model: 'deepseek-chat',
-        autoMomentProbability: 50
-    },
-    
     // 当前聊天状态
     currentChat: {
         type: null, // 'single', 'group'
@@ -57,38 +43,25 @@ let appState = {
     }
 };
 
-// 初始化
+// 初始化应用
 document.addEventListener('DOMContentLoaded', function() {
-    loadFromLocalStorage();
-    changeTheme(appState.currentTheme);
+    // 初始化时钟
     updateClock();
     setInterval(updateClock, 1000);
     
-    document.getElementById('api-url').value = appState.settings.apiUrl;
-    document.getElementById('model-select').value = appState.settings.model;
-    document.getElementById('auto-moment-prob').value = appState.settings.autoMomentProbability;
-    document.getElementById('prob-value').textContent = `${appState.settings.autoMomentProbability}%`;
-    
-    // 事件监听
-    document.getElementById('single-send-btn').onclick = sendSingleMessage;
-    document.getElementById('single-user-input').addEventListener('keypress', handleSingleKeyPress);
-    document.getElementById('group-send-btn').onclick = sendGroupMessage;
-    document.getElementById('group-user-input').addEventListener('keypress', handleGroupKeyPress);
-    document.getElementById('auto-moment-prob').addEventListener('input', updateProbabilityValue);
-    
-    // 更新用户名显示
+    // 更新用户信息显示
     document.getElementById('user-name').textContent = appState.currentUser.name;
     
     // 初始化聊天列表
     updateChatList();
     updateContactsList();
-    updateUnreadCount();
     
-    generateRandomMoments();
-    setInterval(generateAutoMoments, 5 * 60 * 1000);
+    // 绑定事件
+    document.getElementById('single-send-btn').onclick = sendSingleMessage;
+    document.getElementById('single-user-input').addEventListener('keypress', handleSingleKeyPress);
 });
 
-// 时间功能
+// 时钟更新
 function updateClock() {
     const now = new Date();
     const timeStr = now.getHours().toString().padStart(2, '0') + ":" + 
@@ -98,11 +71,31 @@ function updateClock() {
     document.getElementById('real-time').textContent = timeStr;
     document.getElementById('real-date').textContent = dateStr;
     
-    // 更新微信顶部时间
+    // 更新微信时间
     const wechatTime = document.getElementById('wechat-time');
     if (wechatTime) {
         wechatTime.textContent = timeStr;
     }
+}
+
+// 打开应用
+function openApp(appId) {
+    // 隐藏所有应用窗口
+    document.querySelectorAll('.app-window').forEach(win => win.classList.add('hidden'));
+    
+    // 显示目标应用
+    document.getElementById('app-' + appId).classList.remove('hidden');
+    
+    // 如果是微信，初始化界面
+    if (appId === 'wechat') {
+        switchWechatTab('chats');
+    }
+}
+
+// 关闭应用，返回桌面
+function closeApp() {
+    document.querySelectorAll('.app-window').forEach(win => win.classList.add('hidden'));
+    document.getElementById('desktop').classList.remove('hidden');
 }
 
 // 微信标签页切换
@@ -159,40 +152,8 @@ function openSingleChat(characterId) {
     // 更新聊天标题
     document.getElementById('chat-with-name').textContent = character.name;
     
-    // 清空未读消息
-    appState.unreadCounts[characterId] = 0;
-    updateUnreadCount();
-    
     // 加载聊天记录
     loadChatMessages(characterId, 'single');
-}
-
-// 打开群聊
-function openGroupChat(groupId) {
-    const group = appState.groupChats.find(g => g.id === groupId);
-    
-    if (!group) return;
-    
-    appState.currentChat = {
-        type: 'group',
-        targetId: groupId
-    };
-    
-    // 隐藏其他，显示群聊界面
-    document.querySelectorAll('.tab-content, .chat-list-container').forEach(el => {
-        el.classList.add('hidden');
-    });
-    document.getElementById('group-chat').classList.remove('hidden');
-    
-    // 更新聊天标题
-    document.getElementById('group-chat-name').textContent = group.name;
-    
-    // 清空未读消息
-    appState.unreadCounts[groupId] = 0;
-    updateUnreadCount();
-    
-    // 加载聊天记录
-    loadChatMessages(groupId, 'group');
 }
 
 // 返回聊天列表
@@ -228,9 +189,8 @@ function updateChatList() {
     appState.aiCharacters.forEach(char => {
         const conversation = appState.conversations[char.id] || [];
         const lastMsg = conversation.length > 0 ? conversation[conversation.length - 1] : null;
-        const unread = appState.unreadCounts[char.id] || 0;
         
-        const item = createChatItem(char, lastMsg, unread, () => openSingleChat(char.id));
+        const item = createChatItem(char, lastMsg, () => openSingleChat(char.id));
         container.appendChild(item);
     });
     
@@ -238,25 +198,14 @@ function updateChatList() {
     appState.userCharacters.forEach(char => {
         const conversation = appState.conversations[char.id] || [];
         const lastMsg = conversation.length > 0 ? conversation[conversation.length - 1] : null;
-        const unread = appState.unreadCounts[char.id] || 0;
         
-        const item = createChatItem(char, lastMsg, unread, () => openSingleChat(char.id));
-        container.appendChild(item);
-    });
-    
-    // 添加群聊
-    appState.groupChats.forEach(group => {
-        const conversation = appState.conversations[group.id] || [];
-        const lastMsg = conversation.length > 0 ? conversation[conversation.length - 1] : null;
-        const unread = appState.unreadCounts[group.id] || 0;
-        
-        const item = createChatItem(group, lastMsg, unread, () => openGroupChat(group.id));
+        const item = createChatItem(char, lastMsg, () => openSingleChat(char.id));
         container.appendChild(item);
     });
 }
 
 // 创建聊天项
-function createChatItem(target, lastMsg, unread, onClick) {
+function createChatItem(target, lastMsg, onClick) {
     const item = document.createElement('div');
     item.className = 'chat-item';
     item.onclick = onClick;
@@ -271,7 +220,6 @@ function createChatItem(target, lastMsg, unread, onClick) {
             <div class="chat-last-msg">${lastMsgText}</div>
         </div>
         <div class="chat-time">${time}</div>
-        ${unread > 0 ? `<div class="unread-badge">${unread}</div>` : ''}
     `;
     
     return item;
@@ -330,28 +278,11 @@ function updateContactsList() {
     });
 }
 
-// 更新未读消息计数
-function updateUnreadCount() {
-    let totalUnread = 0;
-    
-    // 计算总未读数
-    Object.values(appState.unreadCounts).forEach(count => {
-        totalUnread += count;
-    });
-    
-    const badge = document.getElementById('unread-count');
-    if (totalUnread > 0) {
-        badge.textContent = totalUnread;
-        badge.classList.remove('hidden');
-    } else {
-        badge.classList.add('hidden');
-    }
-}
-
 // 角色编辑器功能
 function toggleCharEditor() {
-    document.getElementById('char-editor').classList.toggle('hidden');
-    if (!document.getElementById('char-editor').classList.contains('hidden')) {
+    const editor = document.getElementById('char-editor');
+    editor.classList.toggle('hidden');
+    if (!editor.classList.contains('hidden')) {
         switchEditorTab('ai');
         updateAvailableChars();
     }
@@ -419,16 +350,6 @@ function updateAvailableChars() {
         `;
         container.appendChild(item);
     });
-    
-    // 添加当前用户
-    const userItem = document.createElement('div');
-    userItem.className = 'char-select-item';
-    userItem.innerHTML = `
-        <input type="checkbox" id="select-user" value="user">
-        <div class="char-select-avatar">${appState.currentUser.avatar}</div>
-        <label for="select-user">${appState.currentUser.name} (我)</label>
-    `;
-    container.appendChild(userItem);
 }
 
 // 保存AI角色
@@ -458,8 +379,12 @@ function saveAICharacter() {
     updateChatList();
     updateContactsList();
     updateAvailableChars();
-    saveToLocalStorage();
     showNotification(`AI角色"${name}"已保存`);
+    
+    // 自动打开与这个角色的聊天
+    setTimeout(() => {
+        openSingleChat(newCharacter.id);
+    }, 500);
 }
 
 // 保存用户角色
@@ -489,8 +414,12 @@ function saveUserCharacter() {
     updateChatList();
     updateContactsList();
     updateAvailableChars();
-    saveToLocalStorage();
     showNotification(`用户角色"${name}"已保存`);
+    
+    // 自动打开与这个角色的聊天
+    setTimeout(() => {
+        openSingleChat(newCharacter.id);
+    }, 500);
 }
 
 // 创建群聊
@@ -505,23 +434,10 @@ function createGroupChat() {
     const groupName = document.getElementById('group-name').value.trim() || 
                      `群聊${appState.groupChats.length + 1}`;
     
-    // 获取群成员信息
-    const members = [];
-    selectedIds.forEach(id => {
-        if (id === 'user') {
-            members.push(appState.currentUser);
-        } else {
-            const aiChar = appState.aiCharacters.find(c => c.id === id);
-            const userChar = appState.userCharacters.find(c => c.id === id);
-            if (aiChar) members.push(aiChar);
-            if (userChar) members.push(userChar);
-        }
-    });
-    
     const newGroup = {
         id: 'group-' + Date.now(),
         name: groupName,
-        members: members,
+        memberIds: selectedIds,
         avatar: '👥',
         isGroup: true
     };
@@ -532,11 +448,49 @@ function createGroupChat() {
     document.getElementById('group-name').value = '';
     selectedItems.forEach(item => item.checked = false);
     
-    updateChatList();
-    updateContactsList();
-    saveToLocalStorage();
     showNotification(`群聊"${groupName}"创建成功`);
     closeCharEditor();
+}
+
+// 加载聊天消息
+function loadChatMessages(chatId, chatType) {
+    const container = chatType === 'single' ? 
+        document.getElementById('single-chat-window') : 
+        document.getElementById('group-chat-window');
+    
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    const messages = appState.conversations[chatId] || [];
+    messages.forEach(msg => {
+        displayMessage(msg, chatType === 'group');
+    });
+    
+    // 滚动到底部
+    container.scrollTop = container.scrollHeight;
+}
+
+// 显示消息
+function displayMessage(message, isGroupChat) {
+    const container = isGroupChat ? 
+        document.getElementById('group-chat-window') : 
+        document.getElementById('single-chat-window');
+    
+    if (!container) return;
+    
+    const isUser = message.senderId === appState.currentUser.id;
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `msg ${isUser ? 'user-msg' : 'other-msg'}`;
+    
+    const time = new Date(message.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    msgDiv.innerHTML = `
+        <div class="msg-content">${message.content.replace(/\n/g, '<br>')}</div>
+        <div class="msg-time">${time}</div>
+    `;
+    
+    container.appendChild(msgDiv);
+    container.scrollTop = container.scrollHeight;
 }
 
 // 发送单聊消息
@@ -554,10 +508,29 @@ function sendSingleMessage() {
     
     if (!character) return;
     
-    // 发送用户消息
-    sendMessageToChat(targetId, 'single', text, appState.currentUser);
+    // 创建消息
+    const message = {
+        id: 'msg-' + Date.now(),
+        senderId: appState.currentUser.id,
+        senderName: appState.currentUser.name,
+        content: text,
+        timestamp: Date.now(),
+        type: 'text'
+    };
+    
+    // 保存消息
+    if (!appState.conversations[targetId]) {
+        appState.conversations[targetId] = [];
+    }
+    appState.conversations[targetId].push(message);
+    
+    // 显示消息
+    displayMessage(message, false);
     
     input.value = '';
+    
+    // 更新聊天列表的最后消息
+    updateChatList();
     
     // 如果是AI角色，自动回复
     if (character.isAI) {
@@ -567,64 +540,124 @@ function sendSingleMessage() {
     }
 }
 
-// 发送群聊消息
-function sendGroupMessage() {
-    if (appState.currentChat.type !== 'group') return;
+// 生成AI回复
+function generateAIResponse(character, userMessage, chatId) {
+    // 这里是模拟AI回复
+    const responses = [
+        "我明白了。",
+        "很有趣的观点。",
+        "能详细说说吗？",
+        "哈哈，你真有意思。",
+        "我也这么觉得。",
+        "这个想法不错。"
+    ];
     
-    const input = document.getElementById('group-user-input');
-    const text = input.value.trim();
-    const groupId = appState.currentChat.targetId;
+    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
     
-    if (!text || !groupId) return;
-    
-    const group = appState.groupChats.find(g => g.id === groupId);
-    if (!group) return;
-    
-    // 发送用户消息
-    sendMessageToChat(groupId, 'group', text, appState.currentUser);
-    
-    input.value = '';
-    
-    // 随机触发群成员回复
-    setTimeout(() => {
-        generateGroupResponse(group, text, groupId);
-    }, 2000);
-}
-
-// 发送消息到聊天
-function sendMessageToChat(chatId, chatType, text, sender) {
-    const message = {
+    const aiMessage = {
         id: 'msg-' + Date.now(),
-        senderId: sender.id,
-        senderName: sender.name,
-        senderAvatar: sender.avatar,
-        content: text,
+        senderId: character.id,
+        senderName: character.name,
+        content: randomResponse,
         timestamp: Date.now(),
         type: 'text'
     };
     
-    // 保存消息
     if (!appState.conversations[chatId]) {
         appState.conversations[chatId] = [];
     }
-    appState.conversations[chatId].push(message);
+    appState.conversations[chatId].push(aiMessage);
     
-    // 如果不是当前聊天，增加未读数
-    if (appState.currentChat.targetId !== chatId) {
-        appState.unreadCounts[chatId] = (appState.unreadCounts[chatId] || 0) + 1;
-        updateUnreadCount();
-    }
-    
-    // 更新聊天列表
+    displayMessage(aiMessage, false);
     updateChatList();
-    
-    // 如果正在查看这个聊天，显示消息
-    if (appState.currentChat.targetId === chatId) {
-        displayMessage(message, chatType === 'group');
-    }
-    
-    saveToLocalStorage();
 }
 
-// 显示消息
-function displayMessage(message
+// 处理回车键发送
+function handleSingleKeyPress(event) {
+    if (event.key === 'Enter') {
+        sendSingleMessage();
+    }
+}
+
+// 朋友圈功能
+function openPostEditor() {
+    document.getElementById('post-editor').classList.remove('hidden');
+}
+
+function closePostEditor() {
+    document.getElementById('post-editor').classList.add('hidden');
+    document.getElementById('post-content').value = '';
+}
+
+function postMoment() {
+    const content = document.getElementById('post-content').value.trim();
+    if (!content) {
+        showNotification('请输入内容', 'error');
+        return;
+    }
+    
+    const moment = {
+        id: Date.now(),
+        author: appState.currentUser.name,
+        avatar: appState.currentUser.avatar,
+        content: content,
+        time: '刚刚',
+        likes: 0,
+        comments: []
+    };
+    
+    if (!appState.moments) appState.moments = [];
+    appState.moments.unshift(moment);
+    renderMoments();
+    closePostEditor();
+    showNotification('动态发布成功');
+}
+
+function renderMoments() {
+    const container = document.getElementById('moments-list');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (!appState.moments || appState.moments.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:#888;">暂无动态</div>';
+        return;
+    }
+    
+    appState.moments.forEach(moment => {
+        const momentEl = document.createElement('div');
+        momentEl.className = 'moment-card';
+        momentEl.innerHTML = `
+            <div class="moment-header">
+                <div class="moment-avatar">${moment.avatar}</div>
+                <div class="moment-author">
+                    <h4>${moment.author}</h4>
+                    <div class="moment-time">${moment.time}</div>
+                </div>
+            </div>
+            <div class="moment-content">${moment.content}</div>
+        `;
+        container.appendChild(momentEl);
+    });
+}
+
+// 主题切换
+function changeTheme(theme) {
+    const screen = document.getElementById('main-screen');
+    // 移除所有主题类
+    screen.className = 'screen';
+    screen.classList.add('theme-' + theme);
+    showNotification(`已切换为${theme}主题`);
+}
+
+// 显示通知
+function showNotification(message, type = 'info') {
+    const notification = document.getElementById('notification');
+    notification.textContent = message;
+    notification.className = `notification ${type}`;
+    notification.classList.remove('hidden');
+    
+    setTimeout(() => {
+        notification.classList.add('hidden');
+    }, 3000);
+}
