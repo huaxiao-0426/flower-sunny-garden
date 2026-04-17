@@ -60,29 +60,3 @@
                 <label>API Key</label>
                 <input type="password" id="api-key" placeholder="填入 Key">
                 <label>选择模型</label>
-                <select id="model-select">
-                    <option value="deepseek-chat">DeepSeek-V3</option>
-                    <option value="deepseek-reasoner">DeepSeek-R1 (深度思考)</option>
-                    <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                    <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-                    <option value="gpt-4o">GPT-4o</option>
-                    <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
-                </select>
-                <button id="save-config">保存设置</button>
-            </div>
-
-            <div id="prompt-panel" class="config-panel hidden">
-                <div class="panel-header">
-                    <h3>人设/角色设计</h3>
-                    <button class="close-btn" onclick="togglePrompt()">×</button>
-                </div>
-                <textarea id="system-prompt" placeholder="例如：你现在是一个温柔可爱的邻家女孩，名字叫花阳..." rows="6" style="width:100%; border-radius:10px; padding:10px;"></textarea>
-                <button onclick="togglePrompt()" style="margin-top:10px;">确认人设</button>
-            </div>
-
-            <div class="home-indicator"></div>
-        </div>
-    </div>
-    <script src="script.js"></script>
-</body>
-</html>
