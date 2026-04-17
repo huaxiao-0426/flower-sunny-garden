@@ -1,50 +1,179 @@
-:root {
-    --ios-blue: #007aff;
-    --wechat-green: #07c160;
-    --bg-main: url('https://images.unsplash.com/photo-1516553174826-d05833723ad4?q=80&w=1000');
+// --- 核心数据存储 ---
+let state = {
+    chars: [
+        { id: 'c1', name: '花阳', prompt: '温柔体贴的邻家女孩', avatar: '🌸' },
+        { id: 'c2', name: '晓月', prompt: '高冷的学霸，说话简短有力', avatar: '🌙' }
+    ],
+    chats: [
+        { id: 'c1', type: 'private', name: '花阳', members: ['c1'], myPersona: '我是她的好朋友', messages: [] }
+    ],
+    moments: [
+        { user: '花阳', text: '今天的太阳真好呀~', likes: 2, comments: ['晓月: 确实'] }
+    ],
+    activeChatId: null
+};
+
+// --- 系统启动 ---
+function init() {
+    updateTime();
+    setInterval(updateTime, 1000);
+    renderChatList();
 }
 
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-body { margin: 0; background: #111; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: -apple-system, sans-serif; }
+function updateTime() {
+    const now = new Date();
+    const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+    document.getElementById('os-time').innerText = timeStr;
+    document.getElementById('home-time').innerText = timeStr;
+}
 
-.phone-frame { width: 375px; height: 780px; background: #000; border-radius: 55px; padding: 12px; border: 4px solid #333; position: relative; }
-.screen { width: 100%; height: 100%; border-radius: 43px; overflow: hidden; position: relative; background: var(--bg-main) no-repeat center/cover; }
+// --- 应用切换控制 ---
+function launchApp(appId) {
+    document.querySelectorAll('.layer').forEach(l => l.classList.remove('active'));
+    document.getElementById('app-' + appId).classList.add('active');
+}
 
-/* 核心图层逻辑：确保不黑屏 */
-.layer { position: absolute; width: 100%; height: 100%; top: 0; left: 0; display: none; flex-direction: column; background: transparent; }
-.layer.active { display: flex; }
-.app-window { background: #f2f2f2; z-index: 10; }
+function exitApp() {
+    document.querySelectorAll('.layer').forEach(l => l.classList.remove('active'));
+    document.getElementById('layer-desktop').classList.add('active');
+}
 
-/* 桌面组件 */
-.home-widgets { color: white; text-align: center; margin-top: 80px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-#home-time { font-size: 70px; margin: 0; font-weight: 200; }
-.icon-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 40px 20px; }
-.app-icon { display: flex; flex-direction: column; align-items: center; color: white; font-size: 11px; font-weight: 500; }
-.img-box { width: 60px; height: 60px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 6px; }
-.wechat { background: #07c160; }
-.settings { background: #8e8e93; }
+function switchTab(tab) {
+    // 隐藏所有微信子视图
+    document.querySelectorAll('.sub-view').forEach(v => v.classList.add('hidden'));
+    document.getElementById('layer-chatting').classList.remove('active');
+    document.getElementById('app-wechat').classList.add('active');
+    
+    document.getElementById('view-' + tab).classList.remove('hidden');
+    if(tab === 'chats') renderChatList();
+    if(tab === 'moments') renderMoments();
+    if(tab === 'contacts') renderContacts();
+}
 
-/* 微信 UI */
-.wechat-header { background: #ededed; padding: 45px 15px 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; }
-.wechat-body { flex: 1; overflow-y: auto; }
-.wechat-tabs { height: 60px; background: #f7f7f7; display: flex; border-top: 1px solid #ddd; }
-.wechat-tabs div { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; color: #555; cursor: pointer; }
+// --- 微信逻辑：多角色与群聊 ---
+function renderChatList() {
+    const container = document.getElementById('view-chats');
+    container.innerHTML = state.chats.map(chat => `
+        <div class="chat-item" onclick="enterChat('${chat.id}')" style="padding:15px; border-bottom:1px solid #ddd; background:#fff;">
+            <strong>${chat.type === 'group' ? '👥 ' : ''}${chat.name}</strong>
+            <div style="font-size:12px; color:#888;">点击进入聊天</div>
+        </div>
+    `).join('');
+}
 
-/* 聊天内容 */
-.chat-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; background: #ededed; }
-.msg { max-width: 75%; padding: 10px 14px; border-radius: 8px; font-size: 15px; position: relative; word-break: break-all; }
-.msg.user { align-self: flex-end; background: #95ec69; }
-.msg.ai { align-self: flex-start; background: #fff; }
-.msg-name { font-size: 11px; color: #888; margin-bottom: 2px; }
+function enterChat(chatId) {
+    state.activeChatId = chatId;
+    const chat = state.chats.find(c => c.id === chatId);
+    document.getElementById('app-wechat').classList.remove('active');
+    document.getElementById('layer-chatting').classList.add('active');
+    document.getElementById('active-chat-name').innerText = chat.name;
+    renderMessages();
+}
 
-/* 朋友圈 */
-.moment-item { background: white; padding: 15px; margin-bottom: 8px; border-bottom: 1px solid #eee; }
-.moment-user { color: #576b95; font-weight: bold; margin-bottom: 5px; }
-.moment-text { font-size: 14px; line-height: 1.5; }
-.moment-footer { margin-top: 10px; font-size: 12px; color: #888; background: #f7f7f7; padding: 8px; border-radius: 4px; }
+// --- 发送消息与 AI 回复 (核心改进) ---
+async function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if(!text || !state.activeChatId) return;
 
-/* 弹窗设计 */
-.modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; display: flex; justify-content: center; align-items: center; }
-.modal-content { background: white; width: 85%; border-radius: 12px; padding: 20px; }
-.modal-content input, .modal-content textarea { width: 100%; margin-top: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
-.hidden { display: none !important; }
+    const chat = state.chats.find(c => c.id === state.activeChatId);
+    chat.messages.push({ role: 'user', content: text });
+    input.value = '';
+    renderMessages();
+
+    // 模拟 AI 回复逻辑
+    setTimeout(() => {
+        // 如果是群聊，随机挑个角色回
+        const replyId = chat.members[Math.floor(Math.random() * chat.members.length)];
+        const char = state.chars.find(c => c.id === replyId);
+        chat.messages.push({ role: 'ai', name: char.name, content: `(基于人设：${char.prompt}) 收到你的消息啦！` });
+        renderMessages();
+        
+        // 50% 概率 AI 发朋友圈
+        if(Math.random() > 0.5) {
+            state.moments.unshift({ user: char.name, text: `刚才和大家聊天真开心！`, likes: 0, comments: [] });
+        }
+    }, 1000);
+}
+
+function renderMessages() {
+    const chat = state.chats.find(c => c.id === state.activeChatId);
+    const container = document.getElementById('chat-messages');
+    container.innerHTML = chat.messages.map(m => `
+        <div class="msg ${m.role}">
+            ${m.name ? `<div class="msg-name">${m.name}</div>` : ''}
+            ${m.content}
+        </div>
+    `).join('');
+    container.scrollTop = container.scrollHeight;
+}
+
+// --- 设置：人设修改与群聊创建 ---
+function showRoomSettings() {
+    const chat = state.chats.find(c => c.id === state.activeChatId);
+    showModal('修改我在此处的人设', `
+        <textarea id="new-persona">${chat.myPersona}</textarea>
+    `, () => {
+        chat.myPersona = document.getElementById('new-persona').value;
+        closeModal();
+    });
+}
+
+function showCreateGroup() {
+    const charOptions = state.chars.map(c => `<label><input type="checkbox" value="${c.id}"> ${c.name}</label><br>`).join('');
+    showModal('发起群聊', `
+        <input type="text" id="group-name" placeholder="群聊名称">
+        <p>选择成员：</p >
+        ${charOptions}
+    `, () => {
+        const name = document.getElementById('group-name').value || '新建群聊';
+        const selected = Array.from(document.querySelectorAll('#modal-body input:checked')).map(i => i.value);
+        if(selected.length < 2) { alert('群聊至少需要2个AI角色'); return; }
+        
+        const newGroup = { id: 'g'+Date.now(), type: 'group', name, members: selected, myPersona: '普通群员', messages: [] };
+        state.chats.push(newGroup);
+        switchTab('chats');
+        closeModal();
+    });
+}
+
+// --- 朋友圈功能 ---
+function renderMoments() {
+    const container = document.getElementById('moments-list');
+    container.innerHTML = state.moments.map(m => `
+        <div class="moment-item">
+            <div class="moment-user">${m.user}</div>
+            <div class="moment-text">${m.text}</div>
+            <div class="moment-footer">❤️ ${m.likes} | 💬 ${m.comments.length}条评论</div>
+        </div>
+    `).join('');
+}
+
+function postMoment() {
+    showModal('发表动态', `<textarea id="m-text" placeholder="这一刻的想法..."></textarea>`, () => {
+        const text = document.getElementById('m-text').value;
+        state.moments.unshift({ user: '我', text, likes: 0, comments: [] });
+        renderMoments();
+        closeModal();
+        
+        // 概率触发 AI 点赞或评论
+        setTimeout(() => {
+            const ai = state.chars[0];
+            state.moments[0].likes++;
+            state.moments[0].comments.push(`${ai.name}: 为你点赞！`);
+            renderMoments();
+        }, 2000);
+    });
+}
+
+// --- 工具函数：弹窗控制 ---
+function showModal(title, bodyHtml, confirmFn) {
+    document.getElementById('modal-title').innerText = title;
+    document.getElementById('modal-body').innerHTML = bodyHtml;
+    document.getElementById('modal-confirm').onclick = confirmFn;
+    document.getElementById('modal-overlay').classList.remove('hidden');
+}
+
+function closeModal() { document.getElementById('modal-overlay').classList.add('hidden'); }
+
+init();
