@@ -7,29 +7,27 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- 自适应容器 -->
     <div class="responsive-container">
         <div class="phone-case">
             <div class="screen" id="main-screen">
-                <!-- 状态栏 -->
+                <!-- 状态栏 - 修改为顶部状态栏 -->
                 <div class="status-bar">
                     <div class="left-status">
-                        <span id="real-time">00:00</span>
-                    </div>
-                    <div class="center-status">
-                        <span id="real-date">2026年04月17日</span>
-                    </div>
-                    <div class="right-status">
                         <span>5G</span>
                         <span class="signal">📶</span>
+                    </div>
+                    <div class="right-status">
                         <span class="battery">81%</span>
                     </div>
                 </div>
 
                 <!-- 主桌面 -->
                 <div id="desktop" class="desktop">
-                    <!-- 桌面背景图 -->
-                    <div class="desktop-bg" id="desktop-bg"></div>
+                    <!-- 时间日期居中显示 -->
+                    <div class="time-date-container">
+                        <div class="time-large" id="real-time">19:00</div>
+                        <div class="date-small" id="real-date">2026年04月17日</div>
+                    </div>
                     
                     <!-- 应用网格 -->
                     <div class="icon-grid">
@@ -61,123 +59,19 @@
 
                 <!-- 微信应用 -->
                 <div id="app-wechat" class="app-window">
-                    <!-- 微信顶部状态栏 -->
-                    <div class="wechat-top-bar">
-                        <span id="wechat-time">00:00</span>
+                    <div class="app-header">
+                        <button class="back-btn" data-close>⬅</button>
                         <span>微信</span>
                         <button class="add-char-btn" id="add-char-btn">👤+</button>
                     </div>
                     
-                    <!-- 微信聊天列表 -->
-                    <div id="chat-list-container" class="chat-list-container active">
-                        <div class="wechat-header">
-                            <span>微信</span>
-                            <div class="wechat-header-right">
-                                <button class="search-btn">🔍</button>
-                                <button class="add-btn" id="new-chat-btn">+</button>
-                            </div>
-                        </div>
-                        
+                    <div class="wechat-content">
+                        <!-- 聊天列表 -->
                         <div id="chat-list" class="chat-list">
                             <!-- 聊天列表会动态生成 -->
                         </div>
-                        
-                        <!-- 微信底部导航 -->
-                        <div class="wechat-nav">
-                            <button class="nav-item active" data-tab="chats">
-                                <span>💬</span>
-                                <span id="unread-count" class="unread-badge">0</span>
-                                <span>微信</span>
-                            </button>
-                            <button class="nav-item" data-tab="contacts">
-                                <span>👥</span>
-                                <span>通讯录</span>
-                            </button>
-                            <button class="nav-item" data-tab="discover">
-                                <span>🌍</span>
-                                <span>发现</span>
-                            </button>
-                            <button class="nav-item" data-tab="profile">
-                                <span>👤</span>
-                                <span>我</span>
-                            </button>
-                        </div>
                     </div>
                     
-                    <!-- 通讯录 -->
-                    <div id="contacts-container" class="tab-content">
-                        <div class="wechat-header">
-                            <button class="back-btn" data-back="chats">⬅</button>
-                            <span>通讯录</span>
-                        </div>
-                        <div id="contacts-list" class="contacts-list">
-                            <!-- 联系人列表会动态生成 -->
-                        </div>
-                    </div>
-                    
-                    <!-- 发现（朋友圈） -->
-                    <div id="discover-container" class="tab-content">
-                        <div class="wechat-header">
-                            <button class="back-btn" data-back="chats">⬅</button>
-                            <span>发现</span>
-                        </div>
-                        <div class="discover-list">
-                            <div class="discover-item" id="moments-btn">
-                                <span>🌍</span>
-                                <span>朋友圈</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 我的 -->
-                    <div id="profile-container" class="tab-content">
-                        <div class="wechat-header">
-                            <button class="back-btn" data-back="chats">⬅</button>
-                            <span>我</span>
-                        </div>
-                        <div class="profile-content">
-                            <div class="user-info">
-                                <div class="user-avatar">👤</div>
-                                <div>
-                                    <h4 id="user-name">用户</h4>
-                                    <p>微信号: huayang_meiyuan</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 单聊界面 -->
-                    <div id="single-chat" class="tab-content">
-                        <div class="chat-header">
-                            <button class="back-btn" data-back="chats">⬅</button>
-                            <span id="chat-with-name">聊天</span>
-                        </div>
-                        <div id="single-chat-window" class="chat-window"></div>
-                        <div class="input-area">
-                            <input type="text" id="single-user-input" placeholder="发送消息...">
-                            <button id="single-send-btn">➤</button>
-                        </div>
-                    </div>
-                    
-                    <!-- 朋友圈详情 -->
-                    <div id="moments-container" class="tab-content">
-                        <div class="moments-header">
-                            <button class="back-btn" data-back="discover">⬅</button>
-                            <span>朋友圈</span>
-                            <button class="camera-btn" id="camera-btn">📷</button>
-                        </div>
-                        <div class="moments-content">
-                            <div id="post-editor" class="post-editor">
-                                <textarea id="post-content" placeholder="分享你的想法..."></textarea>
-                                <div class="post-actions">
-                                    <button id="post-submit-btn">发布</button>
-                                    <button id="post-cancel-btn">取消</button>
-                                </div>
-                            </div>
-                            <div id="moments-list" class="moments-list"></div>
-                        </div>
-                    </div>
-
                     <!-- 角色编辑器 -->
                     <div id="char-editor" class="char-editor">
                         <div class="char-editor-header">
@@ -187,7 +81,6 @@
                         <div class="char-editor-tabs">
                             <button class="editor-tab active" data-editor-tab="ai">AI角色</button>
                             <button class="editor-tab" data-editor-tab="user">我的角色</button>
-                            <button class="editor-tab" data-editor-tab="group">群聊</button>
                         </div>
                         
                         <!-- AI角色编辑 -->
@@ -207,47 +100,27 @@
                                 <button id="save-user-char-btn">保存我的角色</button>
                             </div>
                         </div>
-                        
-                        <!-- 群聊编辑 -->
-                        <div id="group-tab" class="editor-tab-content">
-                            <h4>选择群成员</h4>
-                            <div id="available-chars" class="char-select-list">
-                                <!-- 角色列表会动态生成 -->
-                            </div>
-                            <input type="text" id="group-name" placeholder="群聊名称...">
-                            <div class="char-actions">
-                                <button id="create-group-btn">创建群聊</button>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
                 <!-- 世界书应用 -->
                 <div id="app-worldbook" class="app-window">
                     <div class="app-header">
-                        <button class="back-btn" data-app-close>⬅</button>
+                        <button class="back-btn" data-close>⬅</button>
                         <span>世界书</span>
-                        <button id="import-worldbook-btn">导入</button>
                     </div>
                     
                     <div class="worldbook-container">
-                        <div id="worldbook-importer" class="importer">
-                            <h3>导入世界书</h3>
-                            <input type="file" id="worldbook-file" accept=".json,.txt">
-                            <div class="worldbook-template">
-                                <h4>世界书模板:</h4>
-                                <textarea id="worldbook-template" readonly>{"name":"世界名称","author":"作者","style":"文风描述","background":"世界观背景"}</textarea>
-                                <button id="copy-template-btn">复制模板</button>
-                            </div>
+                        <div id="worldbook-list" class="worldbook-list">
+                            <!-- 世界书列表会动态生成 -->
                         </div>
-                        <div id="worldbook-list" class="worldbook-list"></div>
                     </div>
                 </div>
                 
                 <!-- 主题壁纸应用 -->
                 <div id="app-theme-wallpaper" class="app-window">
                     <div class="app-header">
-                        <button class="back-btn" data-app-close>⬅</button>
+                        <button class="back-btn" data-close>⬅</button>
                         <span>主题壁纸</span>
                     </div>
                     <div class="theme-wallpaper-container">
@@ -261,24 +134,13 @@
                                 <button class="theme-btn" data-theme="sunny">阳光橙</button>
                             </div>
                         </div>
-                        
-                        <!-- 壁纸设置 -->
-                        <div class="section">
-                            <h3>壁纸设置</h3>
-                            <div class="wallpaper-grid">
-                                <div class="wallpaper-item" data-wallpaper="gradient1"></div>
-                                <div class="wallpaper-item" data-wallpaper="gradient2"></div>
-                                <div class="wallpaper-item" data-wallpaper="gradient3"></div>
-                                <div class="wallpaper-item" id="upload-wallpaper-btn">+ 上传</div>
-                            </div>
-                        </div>
                     </div>
                 </div>
                 
                 <!-- AI设置应用 -->
                 <div id="app-settings" class="app-window">
                     <div class="app-header">
-                        <button class="back-btn" data-app-close>⬅</button>
+                        <button class="back-btn" data-close>⬅</button>
                         <span>AI设置</span>
                     </div>
                     <div class="settings-container">
@@ -298,11 +160,6 @@
                             <label>API Key</label>
                             <input type="password" id="api-key" placeholder="输入 API Key">
                         </div>
-                        <div class="setting-item">
-                            <label>自动朋友圈概率</label>
-                            <input type="range" id="auto-moment-prob" min="0" max="100" value="50">
-                            <span id="prob-value">50%</span>
-                        </div>
                         <button class="save-btn" id="save-settings-btn">保存设置</button>
                     </div>
                 </div>
@@ -310,15 +167,15 @@
                 <!-- 个人资料 -->
                 <div id="app-profile" class="app-window">
                     <div class="app-header">
-                        <button class="back-btn" data-app-close>⬅</button>
+                        <button class="back-btn" data-close>⬅</button>
                         <span>个人资料</span>
                     </div>
                     <div class="profile-container">
                         <div class="profile-avatar">👤</div>
-                        <h3>用户</h3>
+                        <h3>花晓</h3>
                         <div class="profile-stats">
                             <div class="stat">
-                                <span id="char-count">0</span>
+                                <span id="char-count">2</span>
                                 <small>角色</small>
                             </div>
                             <div class="stat">
