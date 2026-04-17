@@ -17,7 +17,7 @@ body {
     overflow: hidden;
 }
 
-/* 响应式容器 - 核心自适应解决方案 */
+/* 响应式容器 */
 .responsive-container {
     width: 100%;
     height: 100%;
@@ -27,8 +27,10 @@ body {
     padding: 20px;
 }
 
-/* 自适应手机外壳 */
+/* 手机外壳 */
 .phone-case { 
+    width: 375px; 
+    height: 812px; 
     background: #1a1a1a; 
     border-radius: 50px; 
     padding: 12px; 
@@ -36,10 +38,6 @@ body {
     position: relative;
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
     overflow: hidden;
-    
-    /* 基础手机尺寸 */
-    width: 375px;
-    height: 812px;
     max-width: 100%;
     max-height: 100%;
 }
@@ -57,7 +55,7 @@ body {
     flex-direction: column;
 }
 
-/* 状态栏 */
+/* 状态栏 - 只在顶部显示信号和电量 */
 .status-bar {
     position: relative;
     top: 0;
@@ -81,34 +79,36 @@ body {
     gap: 5px;
 }
 
-.center-status {
-    flex: 1;
-    text-align: center;
-}
-
-#real-time {
-    font-size: 24px;
-    font-weight: 700;
-    letter-spacing: 1px;
-}
-
-#real-date {
-    font-size: 16px;
-    font-weight: 500;
-    opacity: 0.9;
-}
-
-/* 桌面背景 */
-.desktop-bg {
+/* 时间日期容器 - 居中显示 */
+.time-date-container {
     position: absolute;
-    top: 0;
-    left: 0;
+    top: 25%;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 1;
     width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-position: center;
-    z-index: 0;
-    opacity: 0.7;
+}
+
+/* 大号时间 */
+.time-large {
+    font-size: 48px;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+    line-height: 1;
+}
+
+/* 小号日期 */
+.date-small {
+    font-size: 16px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    opacity: 0.9;
+    letter-spacing: 0.5px;
 }
 
 /* 桌面布局 */
@@ -120,14 +120,16 @@ body {
     z-index: 1;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: center;
 }
 
+/* 应用网格 */
 .icon-grid { 
     display: grid; 
     grid-template-columns: repeat(3, 1fr); 
-    gap: 20px;
+    gap: 30px;
     margin-bottom: 20px;
+    margin-top: 150px; /* 为时间日期留出空间 */
 }
 
 .app-icon { 
@@ -198,6 +200,8 @@ body {
     border-radius: 25px;
     margin: 0 20px;
     border: 1px solid rgba(255, 255, 255, 0.2);
+    margin-top: auto;
+    margin-bottom: 20px;
 }
 
 .nav-icon {
@@ -274,99 +278,37 @@ body {
     opacity: 0.7;
 }
 
-/* 隐藏类 */
-.tab-content, .importer, .char-editor, .post-editor, .notification {
-    display: none;
-}
-
-.tab-content.active, .importer.active, .char-editor.active, .post-editor.active, .notification.active {
-    display: flex;
-    flex-direction: column;
-}
-
-/* 微信应用内部样式 */
-.wechat-top-bar {
-    position: relative;
-    width: 100%;
-    padding: 15px 20px 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    z-index: 1000;
-    background: linear-gradient(135deg, #07c160, #05a049);
-}
-
-.wechat-top-bar span:first-child {
-    position: absolute;
-    left: 20px;
-    font-size: 14px;
-}
-
-.wechat-top-bar span:nth-child(2) {
-    font-size: 18px;
-    font-weight: 600;
-}
-
 .add-char-btn {
-    position: absolute;
-    right: 20px;
-    background: none;
-    border: none;
-    font-size: 20px;
+    background: #07c160;
     color: white;
-    cursor: pointer;
-}
-
-/* 微信聊天列表容器 */
-.chat-list-container, .tab-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.chat-list-container.active {
-    display: flex;
-}
-
-.wechat-header {
-    padding: 15px 20px;
-    background: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.wechat-header span {
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
-}
-
-.wechat-header-right {
-    display: flex;
-    gap: 15px;
-}
-
-.search-btn, .add-btn {
-    background: none;
     border: none;
-    font-size: 20px;
+    padding: 8px 15px;
+    border-radius: 6px;
     cursor: pointer;
-    color: #333;
+    font-size: 14px;
+    transition: all 0.3s ease;
 }
 
-/* 聊天列表 */
-.chat-list, .contacts-list, .discover-list {
+.add-char-btn:hover {
+    background: #05a049;
+    transform: translateY(-1px);
+}
+
+/* 微信内容 */
+.wechat-content {
     flex: 1;
     overflow-y: auto;
     background: #f5f5f5;
 }
 
-.chat-item, .contact-item, .discover-item {
+/* 聊天列表 */
+.chat-list {
+    flex: 1;
+    overflow-y: auto;
+    background: #f5f5f5;
+}
+
+.chat-item {
     display: flex;
     align-items: center;
     padding: 12px 20px;
@@ -376,11 +318,11 @@ body {
     transition: background 0.2s;
 }
 
-.chat-item:hover, .contact-item:hover, .discover-item:hover {
+.chat-item:hover {
     background: #f9f9f9;
 }
 
-.chat-avatar, .contact-avatar {
+.chat-avatar {
     width: 50px;
     height: 50px;
     border-radius: 50%;
@@ -393,172 +335,23 @@ body {
     background: linear-gradient(135deg, #667eea, #764ba2);
 }
 
-.chat-info, .contact-info {
+.chat-info {
     flex: 1;
 }
 
-.chat-name, .contact-name {
+.chat-name {
     font-weight: 600;
     color: #333;
     margin-bottom: 4px;
 }
 
-.chat-last-msg, .contact-last-msg {
+.chat-last-msg {
     font-size: 13px;
     color: #888;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     max-width: 200px;
-}
-
-.chat-time {
-    font-size: 12px;
-    color: #aaa;
-    margin-left: auto;
-    align-self: flex-start;
-}
-
-.unread-badge {
-    background: #f56c6c;
-    color: white;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    position: absolute;
-    top: -5px;
-    right: -5px;
-}
-
-/* 微信底部导航 */
-.wechat-nav {
-    display: flex;
-    background: white;
-    border-top: 1px solid #e0e0e0;
-    padding: 10px 0;
-}
-
-.nav-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: none;
-    border: none;
-    font-size: 12px;
-    color: #888;
-    cursor: pointer;
-    position: relative;
-    padding: 5px 0;
-}
-
-.nav-item.active {
-    color: #07c160;
-}
-
-.nav-item span:first-child {
-    font-size: 20px;
-    margin-bottom: 4px;
-}
-
-/* 发现列表 */
-.discover-item {
-    padding: 15px 20px;
-}
-
-.discover-item span:first-child {
-    font-size: 24px;
-    margin-right: 15px;
-    width: 30px;
-    text-align: center;
-}
-
-.discover-item span:nth-child(2) {
-    flex: 1;
-    color: #333;
-    font-size: 16px;
-}
-
-/* 聊天头部 */
-.chat-header, .moments-header {
-    padding: 15px 20px;
-    background: white;
-    display: flex;
-    align-items: center;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.chat-header span, .moments-header span {
-    flex: 1;
-    text-align: center;
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
-}
-
-.camera-btn {
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    color: #333;
-}
-
-/* 聊天窗口 */
-.chat-window {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    background: #f0f0f0;
-}
-
-/* 朋友圈内容 */
-.moments-content {
-    flex: 1;
-    overflow-y: auto;
-    background: #f5f5f5;
-}
-
-/* 用户信息 */
-.user-info {
-    display: flex;
-    align-items: center;
-    padding: 20px;
-    background: white;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.user-avatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 30px;
-    color: white;
-    margin-right: 15px;
-}
-
-.user-info h4 {
-    margin: 0 0 5px 0;
-    color: #333;
-    font-size: 18px;
-}
-
-.user-info p {
-    margin: 0;
-    color: #888;
-    font-size: 14px;
 }
 
 /* 角色编辑器 */
@@ -629,131 +422,48 @@ body {
     display: block;
 }
 
-.char-select-list {
-    max-height: 200px;
-    overflow-y: auto;
-    margin-bottom: 15px;
-    border: 1px solid #e0e0e0;
+.char-editor input, .char-editor textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
     border-radius: 8px;
-    padding: 10px;
-}
-
-.char-select-item {
-    display: flex;
-    align-items: center;
-    padding: 8px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.2s;
-    margin-bottom: 5px;
-}
-
-.char-select-item:hover {
-    background: #f0f0f0;
-}
-
-.char-select-item input[type="checkbox"] {
-    margin-right: 10px;
-}
-
-.char-select-avatar {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    margin-right: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    color: white;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-}
-
-/* 其他样式 */
-.input-area { 
-    padding: 15px; 
-    background: white; 
-    border-top: 1px solid #e0e0e0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    position: relative;
-    z-index: 10;
-}
-
-#single-user-input, #group-user-input { 
-    flex: 1; 
-    padding: 12px 20px; 
-    border: 2px solid #e0e0e0; 
-    border-radius: 25px; 
-    font-size: 15px;
+    font-size: 14px;
     transition: all 0.3s ease;
-    outline: none;
+    margin-bottom: 15px;
 }
 
-#single-user-input:focus, #group-user-input:focus {
+.char-editor input:focus, .char-editor textarea:focus {
+    outline: none;
     border-color: #07c160;
     box-shadow: 0 0 0 3px rgba(7, 193, 96, 0.1);
 }
 
-#single-send-btn, #group-send-btn { 
-    background: linear-gradient(135deg, #07c160, #05a049);
-    color: white; 
-    border: none; 
-    padding: 12px 20px; 
-    border-radius: 25px; 
-    cursor: pointer;
-    font-size: 16px;
-    transition: all 0.3s ease;
+.char-editor textarea {
+    min-height: 100px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.char-actions {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 50px;
+    gap: 10px;
 }
 
-#single-send-btn:hover, #group-send-btn:hover {
+.char-actions button {
+    flex: 1;
+    background: #07c160;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.char-actions button:hover {
+    background: #05a049;
     transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(7, 193, 96, 0.3);
-}
-
-/* 消息样式 */
-.msg { 
-    padding: 12px 16px; 
-    border-radius: 18px; 
-    font-size: 15px; 
-    max-width: 80%; 
-    line-height: 1.4;
-    word-wrap: break-word;
-    position: relative;
-    animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.user-msg { 
-    align-self: flex-end; 
-    background: linear-gradient(135deg, #95ec69, #7bd555);
-    color: #000;
-    border-bottom-right-radius: 5px;
-}
-
-.other-msg { 
-    align-self: flex-start; 
-    background: white; 
-    color: #333;
-    border-bottom-left-radius: 5px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-.msg-time {
-    font-size: 11px;
-    color: #888;
-    margin-top: 4px;
-    text-align: right;
-    opacity: 0.7;
 }
 
 /* 其他应用的样式 */
@@ -761,6 +471,154 @@ body {
     flex: 1;
     overflow-y: auto;
     background: #f0f0f0;
+    padding: 20px;
+}
+
+.worldbook-list, .theme-list {
+    display: grid;
+    gap: 15px;
+}
+
+.worldbook-card, .theme-btn {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.worldbook-card:hover, .theme-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    border-color: #4facfe;
+}
+
+.theme-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 5px 0;
+    padding: 12px 20px;
+    width: 100%;
+}
+
+.section {
+    margin-bottom: 30px;
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.section h3 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 18px;
+}
+
+.setting-item {
+    margin-bottom: 20px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.setting-item label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.setting-item input, .setting-item select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.setting-item input:focus, .setting-item select:focus {
+    outline: none;
+    border-color: #4facfe;
+    box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+}
+
+.save-btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #07c160, #05a049);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+}
+
+.save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(7, 193, 96, 0.3);
+}
+
+/* 个人资料 */
+.profile-container {
+    text-align: center;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 40px 20px;
+    border-radius: 0 0 40px 40px;
+}
+
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    margin: 0 auto 20px;
+    color: #667eea;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.profile-container h3 {
+    font-size: 24px;
+    margin-bottom: 30px;
+}
+
+.profile-stats {
+    display: flex;
+    justify-content: space-around;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat span {
+    display: block;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.stat small {
+    font-size: 14px;
+    opacity: 0.8;
 }
 
 /* 主页指示器 */
@@ -802,13 +660,8 @@ body {
     display: block;
 }
 
-/* 自适应断点 - 核心解决方案 */
-/* 平板设备 (768px 到 1024px) */
+/* 自适应断点 */
 @media (min-width: 768px) and (max-width: 1024px) {
-    .responsive-container {
-        padding: 40px;
-    }
-    
     .phone-case {
         width: 450px;
         height: 900px;
@@ -817,6 +670,14 @@ body {
     
     .screen {
         border-radius: 50px;
+    }
+    
+    .time-large {
+        font-size: 56px;
+    }
+    
+    .date-small {
+        font-size: 18px;
     }
     
     .icon-box {
@@ -836,73 +697,6 @@ body {
     }
 }
 
-/* 大平板设备 (1025px 到 1366px) */
-@media (min-width: 1025px) and (max-width: 1366px) {
-    .responsive-container {
-        padding: 60px;
-    }
-    
-    .phone-case {
-        width: 500px;
-        height: 1000px;
-        border-radius: 70px;
-    }
-    
-    .screen {
-        border-radius: 60px;
-    }
-    
-    .icon-box {
-        width: 90px;
-        height: 90px;
-        font-size: 44px;
-    }
-    
-    .app-icon span {
-        font-size: 16px;
-    }
-    
-    .nav-icon {
-        width: 70px;
-        height: 70px;
-        font-size: 32px;
-    }
-}
-
-/* 桌面设备 (1367px 以上) */
-@media (min-width: 1367px) {
-    .responsive-container {
-        padding: 80px;
-    }
-    
-    .phone-case {
-        width: 550px;
-        height: 1100px;
-        border-radius: 80px;
-    }
-    
-    .screen {
-        border-radius: 70px;
-    }
-    
-    .icon-box {
-        width: 100px;
-        height: 100px;
-        font-size: 48px;
-    }
-    
-    .app-icon span {
-        font-size: 18px;
-    }
-    
-    .nav-icon {
-        width: 80px;
-        height: 80px;
-        font-size: 36px;
-    }
-}
-
-/* 小手机设备 (小于 768px) */
 @media (max-width: 767px) {
     .responsive-container {
         padding: 10px;
@@ -921,9 +715,17 @@ body {
         border-radius: 0;
     }
     
+    .time-large {
+        font-size: 40px;
+    }
+    
+    .date-small {
+        font-size: 14px;
+    }
+    
     .icon-grid {
         grid-template-columns: repeat(3, 1fr);
-        gap: 15px;
+        gap: 20px;
     }
     
     .icon-box {
