@@ -91,5 +91,4 @@ body { background: #1a1a1a; display: flex; justify-content: center; align-items:
     gap: 10px;
 }
 
-#user-input { flex: 1; border: 1px solid #ddd; padding: 10px 15px; border-radius: 20px; outline: none; }
-#send-btn { background: #007aff; color: white; border: none; padding: 0 15px; border-radius: 20px; cursor: pointer; }
+#user-input { flex: 1; border: 1
