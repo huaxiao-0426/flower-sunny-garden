@@ -24,12 +24,11 @@
                 </div>
             </div>
 
-            <!-- 主桌面 -->
+            <!-- 主桌面 - 默认显示 -->
             <div id="desktop" class="desktop">
-                <!-- 桌面背景图 -->
                 <div class="desktop-bg" id="desktop-bg"></div>
                 
-                <!-- 应用网格 (一行3个) -->
+                <!-- 应用网格 -->
                 <div class="icon-grid">
                     <div class="app-icon" onclick="openApp('wechat')">
                         <div class="icon-box wechat-bg">💬</div>
@@ -57,7 +56,7 @@
                 </div>
             </div>
 
-            <!-- 微信应用 -->
+            <!-- 微信应用 - 默认隐藏 -->
             <div id="app-wechat" class="app-window hidden">
                 <!-- 微信顶部状态栏 -->
                 <div class="wechat-top-bar">
@@ -67,11 +66,11 @@
                 </div>
                 
                 <!-- 微信聊天列表 -->
-                <div id="chat-list-container" class="chat-list-container active">
+                <div id="chat-list-container" class="chat-list-container">
                     <div class="wechat-header">
-                        <span id="wechat-title">微信</span>
+                        <span>微信</span>
                         <div class="wechat-header-right">
-                            <button class="search-btn" onclick="searchChats()">🔍</button>
+                            <button class="search-btn">🔍</button>
                             <button class="add-btn" onclick="openNewChat()">+</button>
                         </div>
                     </div>
@@ -105,6 +104,7 @@
                 <!-- 通讯录 -->
                 <div id="contacts-container" class="tab-content hidden">
                     <div class="wechat-header">
+                        <button class="back-btn" onclick="backToChatList()">⬅</button>
                         <span>通讯录</span>
                     </div>
                     <div id="contacts-list" class="contacts-list">
@@ -115,13 +115,13 @@
                 <!-- 发现（朋友圈） -->
                 <div id="discover-container" class="tab-content hidden">
                     <div class="wechat-header">
+                        <button class="back-btn" onclick="backToChatList()">⬅</button>
                         <span>发现</span>
                     </div>
                     <div class="discover-list">
                         <div class="discover-item" onclick="openMoments()">
                             <span>🌍</span>
                             <span>朋友圈</span>
-                            <span class="discover-badge" id="moments-badge"></span>
                         </div>
                     </div>
                 </div>
@@ -129,6 +129,7 @@
                 <!-- 我的 -->
                 <div id="profile-container" class="tab-content hidden">
                     <div class="wechat-header">
+                        <button class="back-btn" onclick="backToChatList()">⬅</button>
                         <span>我</span>
                     </div>
                     <div class="profile-content">
@@ -152,19 +153,6 @@
                     <div class="input-area">
                         <input type="text" id="single-user-input" placeholder="发送消息..." onkeypress="handleSingleKeyPress(event)">
                         <button id="single-send-btn" onclick="sendSingleMessage()">➤</button>
-                    </div>
-                </div>
-                
-                <!-- 群聊界面 -->
-                <div id="group-chat" class="tab-content hidden">
-                    <div class="chat-header">
-                        <button class="back-btn" onclick="backToChatList()">⬅</button>
-                        <span id="group-chat-name">群聊</span>
-                    </div>
-                    <div id="group-chat-window" class="chat-window"></div>
-                    <div class="input-area">
-                        <input type="text" id="group-user-input" placeholder="发送消息..." onkeypress="handleGroupKeyPress(event)">
-                        <button id="group-send-btn" onclick="sendGroupMessage()">➤</button>
                     </div>
                 </div>
                 
@@ -231,21 +219,97 @@
                 </div>
             </div>
 
-            <!-- 其他应用（保持不变） -->
+            <!-- 世界书应用 -->
             <div id="app-worldbook" class="app-window hidden">
-                <!-- ... 世界书代码 ... -->
+                <div class="app-header">
+                    <button class="back-btn" onclick="closeApp()">⬅</button>
+                    <span>世界书</span>
+                    <button onclick="openWorldbookImporter()">导入</button>
+                </div>
+                
+                <div class="worldbook-container">
+                    <div id="worldbook-importer" class="importer hidden">
+                        <h3>导入世界书</h3>
+                        <input type="file" id="worldbook-file" accept=".json,.txt" onchange="importWorldbook(this)">
+                        <div class="worldbook-template">
+                            <h4>世界书模板:</h4>
+                            <textarea id="worldbook-template" readonly>{"name":"世界名称","author":"作者","style":"文风描述","background":"世界观背景"}</textarea>
+                            <button onclick="copyWorldbookTemplate()">复制模板</button>
+                        </div>
+                    </div>
+                    <div id="worldbook-list" class="worldbook-list"></div>
+                </div>
             </div>
             
+            <!-- 主题壁纸应用 -->
             <div id="app-theme-wallpaper" class="app-window hidden">
-                <!-- ... 主题壁纸代码 ... -->
+                <div class="app-header">
+                    <button class="back-btn" onclick="closeApp()">⬅</button>
+                    <span>主题壁纸</span>
+                </div>
+                <div class="theme-wallpaper-container">
+                    <div class="section">
+                        <h3>主题设置</h3>
+                        <div class="theme-list">
+                            <button class="theme-btn" onclick="changeTheme('default')">经典蓝白</button>
+                            <button class="theme-btn" onclick="changeTheme('dark')">极夜黑</button>
+                            <button class="theme-btn" onclick="changeTheme('sakura')">樱花粉</button>
+                        </div>
+                    </div>
+                </div>
             </div>
             
+            <!-- AI设置应用 -->
             <div id="app-settings" class="app-window hidden">
-                <!-- ... AI设置代码 ... -->
+                <div class="app-header">
+                    <button class="back-btn" onclick="closeApp()">⬅</button>
+                    <span>AI设置</span>
+                </div>
+                <div class="settings-container">
+                    <div class="setting-item">
+                        <label>选择AI模型</label>
+                        <select id="model-select">
+                            <option value="deepseek-chat">DeepSeek-V3</option>
+                            <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                            <option value="gpt-4o">GPT-4o</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label>API 地址</label>
+                        <input type="text" id="api-url" placeholder="https://api.deepseek.com/v1" value="https://api.deepseek.com/v1">
+                    </div>
+                    <div class="setting-item">
+                        <label>API Key</label>
+                        <input type="password" id="api-key" placeholder="输入 API Key">
+                    </div>
+                    <button class="save-btn" onclick="saveSettings()">保存设置</button>
+                </div>
             </div>
             
+            <!-- 个人资料 -->
             <div id="app-profile" class="app-window hidden">
-                <!-- ... 个人资料代码 ... -->
+                <div class="app-header">
+                    <button class="back-btn" onclick="closeApp()">⬅</button>
+                    <span>个人资料</span>
+                </div>
+                <div class="profile-container">
+                    <div class="profile-avatar">👤</div>
+                    <h3>用户</h3>
+                    <div class="profile-stats">
+                        <div class="stat">
+                            <span id="char-count">0</span>
+                            <small>角色</small>
+                        </div>
+                        <div class="stat">
+                            <span id="moment-count">0</span>
+                            <small>动态</small>
+                        </div>
+                        <div class="stat">
+                            <span id="worldbook-count">0</span>
+                            <small>世界书</small>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="home-indicator"></div>
@@ -258,4 +322,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
